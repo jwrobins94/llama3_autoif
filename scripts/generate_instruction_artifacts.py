@@ -9,6 +9,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
+    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Context length')
 
     parser.add_argument(f'--num-test-cases', type=int, required=True, help='Number of test cases per instruction')
     parser.add_argument(f'--num-verifiers', type=int, required=True, help='Number of verification functions per instruction')
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 
         outputs = model.generate(
             **batch,
-            max_new_tokens=args.tokens_per_completion,
+            max_new_tokens=args.max_tokens,
             eos_token_id=tokenizer.eos_token_id,
             use_cache=True,
             do_sample=True,
