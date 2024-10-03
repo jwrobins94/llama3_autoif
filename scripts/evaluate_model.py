@@ -14,6 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--limit', type=int, default=None, help='Optional limit on the number of evaluation rows')
+    parser.add_argument(f'--batch-size', type=int, default=64, help='Batch size for evaluation')
     parser.add_argument(f'--output', type=str, default=None, help='Path to write sample results')
     return parser.parse_args()
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    scores, samples = run_ifeval(model, tokenizer, args.limit or None)
+    scores, samples = run_ifeval(model, tokenizer, args.batch_size, args.limit or None)
     print(scores)
 
     if args.output:

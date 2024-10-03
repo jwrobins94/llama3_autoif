@@ -4,22 +4,23 @@ from lm_eval.models.huggingface import HFLM
 from transformers import PreTrainedTokenizerFast
 import nltk
 import pandas as pd
+from typing import Optional
 
 @torch.no_grad()
-def run_ifeval(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, limit=None) -> tuple[dict[str, object], list[object]]:
+def run_ifeval(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, batch_size: int, limit: Optional[int] = None) -> tuple[dict[str, object], list[object]]:
     # this download is needed for ifeval to run
     nltk.download('punkt_tab')
 
     model.eval()
     result = simple_evaluate(
-        model=HFLM(pretrained=model, tokenizer=tokenizer, batch_size=1),
+        model=HFLM(pretrained=model, tokenizer=tokenizer, batch_size=batch_size),
         tasks=['ifeval'],
         device=model.device,
         cache_requests=True,
         log_samples=True,
         limit=limit,
         num_fewshot=0,
-        batch_size=1, # TODO ensure that results are correct when using larger batch sizes
+        batch_size=batch_size, # TODO ensure that results are correct when using larger batch sizes
         apply_chat_template=True
     )
     scores = result['results']['ifeval']
