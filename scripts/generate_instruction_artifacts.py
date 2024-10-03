@@ -30,11 +30,16 @@ follows this instruction. If it follows, simply return True, otherwise return Fa
 Please respond with a single JSON that includes the evaluation function in the key 'func',
 and a list of three test cases in the key 'cases', which includes an input in the key 'input' and
 an expected output in the key 'output' (True or False).
+
 Here is an example of output JSON format:
+```
 {{
 "func": "JSON Str“,
 "cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
-}}'''
+}}
+```
+
+Answer with the JSON code specification and nothing else.'''
 
 def extract_code(s: str) -> str:
     # llama models write code in ```code``` blocks.
@@ -72,7 +77,7 @@ if __name__ == '__main__':
         )
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)[0]
-        print(instruction)
+        print(prompt)
         print(decoded)
         code = extract_code(decoded)
         print(code)
