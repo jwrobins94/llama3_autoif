@@ -3,6 +3,7 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import re
+import json
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -19,7 +20,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
     return parser.parse_args()
 
+
+
 def construct_test_and_verifier_prompt(instruction: str) -> str:
+    example_evaluate = json.dumps('''def evaluate(response: str) -> bool:
+    return 'B' in response''')
+
     return f'''
 You are an expert for writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
@@ -31,13 +37,19 @@ Please respond with a single JSON that includes the evaluation function in the k
 and a list of three test cases in the key 'cases', which includes an input in the key 'input' and
 an expected output in the key 'output' (True or False).
 
-Here is an example of output JSON format:
+Here is the expected JSON format:
 ```
 {{
 "func": "JSON Str“,
 "cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
 }}
 ```
+
+Here is an example of a good output for the instruction: use the letter B at least once
+{{
+"func": "{example_evaluate}",
+"cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }} ]
+}}
 
 Answer with the JSON code specification and nothing else.'''
 
