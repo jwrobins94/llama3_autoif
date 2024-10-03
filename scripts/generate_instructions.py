@@ -9,8 +9,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--limit', type=int, default=None, help='Number of new instructions to generate')
-
+    parser.add_argument(f'--limit', type=int, required=True, help='Number of new instructions to generate')
+    parser.add_argument(f'--tokens-per-completion', type=int, default=128, help='Number of new instructions to generate')
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
     return parser.parse_args()
@@ -50,17 +50,23 @@ if __name__ == '__main__':
     batch = tokenizer([prompt], return_tensors='pt')
     batch.to(model.device)
 
-    max_new_tokens = 128
-    outputs = model.generate(**batch, max_new_tokens=max_new_tokens, eos_token_id=tokenizer.eos_token_id, use_cache=True, do_sample=True, temperature=1.0)
-    outputs = outputs[:, batch['input_ids'].shape[-1]:]
-    decoded = tokenizer.decode(outputs[0])
-    print(decoded)
+    generated_instructions = []
+    while len(generated_instructions) < args.limit:
+        outputs = model.generate(
+            **batch,
+            max_new_tokens=args.tokens_per_completion,
+            eos_token_id=tokenizer.eos_token_id,
+            use_cache=True,
+            do_sample=True,
+            temperature=1.0
+        )
+        outputs = outputs[:, batch['input_ids'].shape[-1]:]
+        decoded = tokenizer.decode(outputs[0])
+        print(decoded)
+        new_instructions = decoded.splitlines()
+        generated_instructions.extend(new_instructions)
 
-
-    # Generate new instructions
-    # Add new instructions to the list
-    # Repeat
-
-    #if args.output:
-    #    with open(args.output, 'w') as f:
-    #        f.write(json.dumps(samples, indent=2))
+    with open(args.output, 'w') as f:
+        # we write out all of the generated instructions here
+        # quality filtering happens later
+        f.write('\n'.join(generated_instructions))
