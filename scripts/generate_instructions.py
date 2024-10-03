@@ -20,9 +20,15 @@ def construct_prompt(seed_instructions: list[str]) -> str:
     return f'''Below is a list of "verifiable instructions" that will be used to train a large language model.
 Each instruction has the following properties:
 1. A competant Python programmer could write a function to verify whether a response satisfies the instruction.
-2. The instruction is unambiguous.
-3. The instruction does not require knowledge of external data sources to follow.
+2. The instruction can be followed without knowledge of external data sources.
+3. The instruction is broadly applicable to a variety of user queries.
 
+Below are a set of bad instructions that are hard to verify:
+Use only words that are odd numbers (e.g., one, three, five)
+Use only the first half of the sentence
+Answer with a statement that ends in a rhetorical question
+
+Below are a set of good instructions:
 {seed_instructions_str}
 '''
 
