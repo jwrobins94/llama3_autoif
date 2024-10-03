@@ -65,6 +65,7 @@ if __name__ == '__main__':
         print(decoded)
         new_instructions = decoded.splitlines()
         generated_instructions.extend(new_instructions)
+        print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
 
     with open(args.output, 'w') as f:
         # we write out all of the generated instructions here
