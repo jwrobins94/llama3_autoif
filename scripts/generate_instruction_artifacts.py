@@ -4,6 +4,7 @@ import argparse
 import torch
 import re
 import json
+from transformers import StopStringCriteria
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -13,8 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Context length')
 
-    parser.add_argument(f'--num-test-cases', type=int, required=True, help='Number of test cases per instruction')
-    parser.add_argument(f'--num-verifiers', type=int, required=True, help='Number of verification functions per instruction')
+    parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
@@ -38,7 +38,7 @@ and a list of three test cases in the key 'cases', which includes an input in th
 an expected output in the key 'output' (True or False).
 
 Here is the expected JSON format:
-```
+```json
 {{
 "func": "JSON Str“,
 "cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
@@ -46,7 +46,7 @@ Here is the expected JSON format:
 ```
 
 Here is an example of a good output for the instruction: use the letter B at least once
-```
+```json
 {{
 "func": {example_evaluate},
 "cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }} ]
@@ -80,20 +80,23 @@ if __name__ == '__main__':
             add_generation_prompt=True,
             tokenize=False
         )
+        prompt += '```json'
 
-        batch = tokenizer([prompt], return_tensors='pt')
-        batch.to(model.device)
+        for _ in range(args.num_verifications):
+            batch = tokenizer([prompt], return_tensors='pt')
+            batch.to(model.device)
 
-        outputs = model.generate(
-            **batch,
-            max_new_tokens=args.max_tokens,
-            eos_token_id=tokenizer.eos_token_id,
-            use_cache=True,
-            do_sample=False,
-            temperature=0.0
-        )
-        outputs = outputs[:, batch['input_ids'].shape[-1]:]
-        decoded = tokenizer.batch_decode(outputs)[0]
+            outputs = model.generate(
+                **batch,
+                max_new_tokens=args.max_tokens,
+                eos_token_id=tokenizer.eos_token_id,
+                use_cache=True,
+                do_sample=False,
+                temperature=0.0,
+                stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
+            )
+            outputs = outputs[:, batch['input_ids'].shape[-1]:]
+            decoded = tokenizer.batch_decode(outputs)[0]
         print(prompt)
         print(decoded)
         code = extract_code(decoded)
