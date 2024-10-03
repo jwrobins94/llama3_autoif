@@ -50,7 +50,11 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    prompt = construct_prompt(seed_instructions)
+    prompt = tokenizer.apply_chat_template(
+        [{'role': 'user', 'content': construct_prompt(seed_instructions)}],
+        add_generation_prompt=True,
+        tokenize=False
+    )
     print(prompt)
 
     batch = tokenizer([prompt]*args.batch_size, return_tensors='pt')
