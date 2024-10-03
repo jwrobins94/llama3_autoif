@@ -73,7 +73,7 @@ if __name__ == '__main__':
         model.to('cuda:0')
 
     # TODO batch this
-    for instruction in instructions:
+    for instruction in instructions[:2]:
         prompt = construct_test_and_verifier_prompt(instruction)
 
         batch = tokenizer([prompt], return_tensors='pt')
@@ -93,4 +93,5 @@ if __name__ == '__main__':
         print(decoded)
         code = extract_code(decoded)
         print(code)
+        print('------------')
 
