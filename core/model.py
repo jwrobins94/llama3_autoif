@@ -7,7 +7,9 @@ from typing import Optional
 # It is safe to include any models here that share a tokenizer with the Llama 3 series.
 ALLOWED_MODELS = [
     'meta-llama/Meta-Llama-3-8B-Instruct',
-    'meta-llama/Llama-3.2-1B-Instruct'
+    'meta-llama/Llama-3.2-1B-Instruct',
+    'meta-llama/Meta-Llama-3-8B',
+    'meta-llama/Llama-3.2-1B'
 ]
 
 def load_state_dict(ckpt: str) -> dict[str, torch.Tensor]:
