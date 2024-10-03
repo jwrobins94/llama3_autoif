@@ -43,10 +43,10 @@ Answer with the JSON code specification and nothing else.'''
 
 def extract_code(s: str) -> str:
     # llama models write code in ```code``` blocks.
-    # we extract all code blocks from the response and concatenate them together
+    # we extract the first code block from the response and concatenate them together
     pattern = r'```(.*?)```'
     code_blocks = re.findall(pattern, s, re.DOTALL)
-    return '\n'.join(code_blocks)
+    return code_blocks[0] if code_blocks else ''
 
 if __name__ == '__main__':
     args = parse_args()
