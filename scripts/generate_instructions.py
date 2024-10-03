@@ -1,7 +1,6 @@
 from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
-import json
 import torch
 
 def parse_args() -> argparse.Namespace:
@@ -18,16 +17,11 @@ def parse_args() -> argparse.Namespace:
 
 def construct_prompt(seed_instructions: list[str]) -> str:
     seed_instructions_str = '\n'.join(seed_instructions)
-    return f'''Your task is to generate a newline-delimited list of "verifiable instructions" that will be used to train a large language model.
-At the end of this message is a list of example instructions.
+    return f'''Below is a list of "verifiable instructions" that will be used to train a large language model.
+Each instruction is designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
 
-Please provide 10 new instructions like this, with one instruction per line.
-Each instruction should be designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
-Each line must contain the instruction and nothing else.
-
-Examples:
-
-{seed_instructions_str}'''
+{seed_instructions_str}
+'''
 
 if __name__ == '__main__':
     args = parse_args()
@@ -41,12 +35,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    prompt = tokenizer.apply_chat_template([
-        {
-            'role': 'user',
-            'content': construct_prompt(seed_instructions)
-        }
-    ], add_generation_prompt=True, tokenize=False)
+    prompt = construct_prompt(seed_instructions)
     print(prompt)
 
     batch = tokenizer([prompt], return_tensors='pt')
