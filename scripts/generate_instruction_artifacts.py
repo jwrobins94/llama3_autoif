@@ -85,8 +85,10 @@ if __name__ == '__main__':
             max_new_tokens=args.max_tokens,
             eos_token_id=tokenizer.eos_token_id,
             use_cache=True,
-            do_sample=False,
-            temperature=0.0
+            do_sample=True,
+            top_p=0.9,
+            top_k=3,
+            temperature=1.0
         )
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)[0]
