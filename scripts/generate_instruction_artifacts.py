@@ -2,6 +2,7 @@ from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
+import re
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -35,6 +36,11 @@ Here is an example of output JSON format:
 "cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
 }}'''
 
+def extract_code(s: str) -> str:
+    pattern = r'```(.*?)```'
+    code_blocks = re.findall(pattern, s, re.DOTALL)
+    return code_blocks
+
 if __name__ == '__main__':
     args = parse_args()
 
@@ -66,4 +72,6 @@ if __name__ == '__main__':
         decoded = tokenizer.batch_decode(outputs)[0]
         print(instruction)
         print(decoded)
+        code = extract_code(decoded)
+        print(code)
 
