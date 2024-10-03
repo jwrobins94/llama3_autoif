@@ -12,7 +12,7 @@ def run_ifeval(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, limit
 
     model.eval()
     result = simple_evaluate(
-        model=HFLM(pretrained=model, tokenizer=tokenizer),
+        model=HFLM(pretrained=model, tokenizer=tokenizer, batch_size=10),
         tasks=['ifeval'],
         device=model.device,
         cache_requests=True,
