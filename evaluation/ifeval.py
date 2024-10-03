@@ -19,7 +19,7 @@ def run_ifeval(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, limit
         log_samples=True,
         limit=limit,
         num_fewshot=0,
-        batch_size=1, # TODO ensure that results are correct when using larger batch sizes
+        batch_size=10, # TODO ensure that results are correct when using larger batch sizes
         apply_chat_template=True
     )
     scores = result['results']['ifeval']
