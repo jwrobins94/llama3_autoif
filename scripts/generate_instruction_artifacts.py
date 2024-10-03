@@ -52,7 +52,7 @@ Here is an example of a good output for the instruction: use the letter B at lea
 "cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }} ]
 }}```
 
-Answer with the JSON code specification surrounded by ```JSON``` and nothing else.'''
+Place your answer in a code block, as in the example above.'''
 
 def extract_code(s: str) -> str:
     # llama models write code in ```code``` blocks.
