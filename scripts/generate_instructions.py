@@ -63,8 +63,8 @@ if __name__ == '__main__':
         )
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)
-        new_instructions = [completion.splitlines() for completion in decoded]
-        generated_instructions.extend(new_instructions)
+        for completion in decoded:
+            generated_instructions.extend(completion.splitlines())
         print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
 
     with open(args.output, 'w') as f:
