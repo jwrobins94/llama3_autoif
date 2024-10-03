@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 def construct_prompt(seed_instructions: list[str]) -> str:
+    seed_instructions_str = '\n'.join(seed_instructions)
     return f'''Your task is to generate a newline-delimited list of "verifiable instructions" that will be used to train a large language model.
     At the end of this message is a list of example instructions.
 
@@ -25,7 +26,7 @@ def construct_prompt(seed_instructions: list[str]) -> str:
 
     Examples:
 
-    {'\n'.join(seed_instructions)}'''
+    {seed_instructions_str}'''
 
 if __name__ == '__main__':
     args = parse_args()
