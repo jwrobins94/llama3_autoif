@@ -18,7 +18,10 @@ def parse_args() -> argparse.Namespace:
 def construct_prompt(seed_instructions: list[str]) -> str:
     seed_instructions_str = '\n'.join(seed_instructions)
     return f'''Below is a list of "verifiable instructions" that will be used to train a large language model.
-Each instruction is designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
+Each instruction has the following properties:
+1. A competant Python programmer could write a function to verify whether a response satisfies the instruction.
+2. The instruction is unambiguous.
+3. The instruction does not require knowledge of external data sources to follow.
 
 {seed_instructions_str}
 '''
