@@ -37,9 +37,11 @@ Here is an example of output JSON format:
 }}'''
 
 def extract_code(s: str) -> str:
+    # llama models write code in ```code``` blocks.
+    # we extract all code blocks from the response and concatenate them together
     pattern = r'```(.*?)```'
     code_blocks = re.findall(pattern, s, re.DOTALL)
-    return code_blocks
+    return '\n'.join(code_blocks)
 
 if __name__ == '__main__':
     args = parse_args()
