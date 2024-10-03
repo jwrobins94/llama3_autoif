@@ -23,6 +23,7 @@ At the end of this message is a list of example instructions.
 
 Please provide 10 new instructions like this, with one instruction per line.
 Each instruction should be designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
+Each line must contain the instruction and nothing else.
 
 Examples:
 
