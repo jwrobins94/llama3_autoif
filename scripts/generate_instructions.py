@@ -4,8 +4,8 @@ import argparse
 import torch
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Script to run IFEval on a trained model')
-    parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.2-1B-Instruct"')
+    parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
+    parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
