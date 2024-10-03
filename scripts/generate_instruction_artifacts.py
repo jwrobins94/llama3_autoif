@@ -46,12 +46,13 @@ Here is the expected JSON format:
 ```
 
 Here is an example of a good output for the instruction: use the letter B at least once
+```
 {{
-"func": "{example_evaluate}",
+"func": {example_evaluate},
 "cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }} ]
-}}
+}}```
 
-Answer with the JSON code specification and nothing else.'''
+Answer with the JSON code specification surrounded by ```JSON``` and nothing else.'''
 
 def extract_code(s: str) -> str:
     # llama models write code in ```code``` blocks.
