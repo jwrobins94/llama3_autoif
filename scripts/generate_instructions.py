@@ -45,7 +45,7 @@ if __name__ == '__main__':
             'role': 'user',
             'content': construct_prompt(seed_instructions)
         }
-    ], add_generation_prompt=True)
+    ], add_generation_prompt=True, return_tensors='pt')
 
     max_new_tokens = 128
     outputs = model.generate(**batch, max_new_tokens=max_new_tokens, eos_token_id=tokenizer.eos_token_id, use_cache=True, do_sample=True, temperature=1.0)
