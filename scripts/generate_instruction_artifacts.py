@@ -29,10 +29,10 @@ Please respond with a single JSON that includes the evaluation function in the k
 and a list of three test cases in the key 'cases', which includes an input in the key 'input' and
 an expected output in the key 'output' (True or False).
 Here is an example of output JSON format:
-{
+{{
 "func": "JSON Str“,
-"cases": [ { "input": "str", "output": "True" }, { "input": "str", "output": "False" } ]
-}'''
+"cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
+}}'''
 
 if __name__ == '__main__':
     args = parse_args()
