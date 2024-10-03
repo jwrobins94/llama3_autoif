@@ -5,6 +5,7 @@ from core.tokenizer import load_tokenizer
 from evaluation.ifeval import run_ifeval
 import argparse
 import json
+import torch
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to run IFEval on a trained model')
@@ -21,6 +22,10 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+
+    if torch.cuda.is_available():
+        model.to('cuda:0')
+
     scores, samples = run_ifeval(model, tokenizer, args.limit or None)
     print(scores)
 
