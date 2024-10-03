@@ -2,7 +2,6 @@ from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
-import re
 import json
 from transformers import StopStringCriteria
 
@@ -54,13 +53,6 @@ Here is an example of a good output for the instruction: use the letter B at lea
 
 Place your answer in a code block, as in the example above.'''
 
-def extract_code(s: str) -> str:
-    # llama models write code in ```code``` blocks.
-    # we extract the first code block from the response and concatenate them together
-    pattern = r'```(.*?)```'
-    code_blocks = re.findall(pattern, s, re.DOTALL)
-    return code_blocks[0] if code_blocks else ''
-
 if __name__ == '__main__':
     args = parse_args()
 
@@ -80,6 +72,8 @@ if __name__ == '__main__':
             add_generation_prompt=True,
             tokenize=False
         )
+
+        # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
         prompt += '```json'
 
         for _ in range(args.num_verifications):
@@ -97,9 +91,9 @@ if __name__ == '__main__':
             )
             outputs = outputs[:, batch['input_ids'].shape[-1]:]
             decoded = tokenizer.batch_decode(outputs)[0]
-        print(prompt)
-        print(decoded)
-        code = extract_code(decoded)
-        print(code)
-        print('------------')
+            if decoded.ends('```'):
+                decoded = decoded[:-3]
+            print(prompt)
+            print(decoded)
+            print('------------')
 
