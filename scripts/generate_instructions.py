@@ -19,20 +19,21 @@ def parse_args() -> argparse.Namespace:
 def construct_prompt(seed_instructions: list[str]) -> str:
     seed_instructions_str = '\n'.join(seed_instructions)
     return f'''Your task is to generate a newline-delimited list of "verifiable instructions" that will be used to train a large language model.
-    At the end of this message is a list of example instructions.
+At the end of this message is a list of example instructions.
 
-    Please provide 10 new instructions like this, with one instruction per line.
-    Each instruction should be designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
+Please provide 10 new instructions like this, with one instruction per line.
+Each instruction should be designed such that a competant Python programmer could write a function to verify whether a response satisfies the instruction.
 
-    Examples:
+Examples:
 
-    {seed_instructions_str}'''
+{seed_instructions_str}'''
 
 if __name__ == '__main__':
     args = parse_args()
 
     with open(args.input) as f:
         seed_instructions = f.readlines()
+        print(seed_instructions)
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
