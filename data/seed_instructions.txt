@@ -1,5 +1,5 @@
 Answer with words that begin with the letter 'B'
-Construct the reply as if it's a telegram STOP
+Construct the reply as if it's a telegram
 Use only palindromes
 Incorporate a famous movie quote seamlessly into your answer
 Write the response backward
