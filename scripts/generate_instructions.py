@@ -35,7 +35,7 @@ some examples of instructions we do not need:
 - Write the response as if you are a character from a Shakespearean play
 
 Please generate one instruction per line in your response.
-Each line should contain a single instruction and nothing else.
+Each line should contain a single instruction and nothing else. Do not prefix your instructions with '-', numbers, or bullet points.
 '''
 
 if __name__ == '__main__':
