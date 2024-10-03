@@ -75,7 +75,11 @@ if __name__ == '__main__':
 
     # TODO batch this
     for instruction in instructions[:2]:
-        prompt = construct_test_and_verifier_prompt(instruction)
+        prompt = tokenizer.apply_chat_template(
+            [{'role': 'user', 'content': construct_test_and_verifier_prompt(instruction)}],
+            add_generation_prompt=True,
+            tokenize=False
+        )
 
         batch = tokenizer([prompt], return_tensors='pt')
         batch.to(model.device)
