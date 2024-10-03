@@ -5,7 +5,7 @@ import torch
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
-    parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B"')
+    parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
@@ -18,19 +18,24 @@ def parse_args() -> argparse.Namespace:
 
 def construct_prompt(seed_instructions: list[str]) -> str:
     seed_instructions_str = '\n'.join(seed_instructions)
-    return f'''Below is a list of "verifiable instructions" that will be used to train a large language model.
-Each instruction has the following properties:
-1. A competant Python programmer could write a function to verify whether a response satisfies the instruction.
-2. The instruction can be followed without knowledge of external data sources.
-3. The instruction is broadly applicable to a variety of user queries.
-
-Below are a set of bad instructions that are hard to verify:
-Use only words that are odd numbers (e.g., one, three, five)
-Use only the first half of the sentence
-Answer with a statement that ends in a rhetorical question
-
-Below are a set of good instructions:
+    # This prompt is largely copied from the source paper: https://arxiv.org/pdf/2406.13542v3
+    return f'''You are an expert at writing instructions. Please provide instructions that meet
+the following requirements:
+- Instructions constrain the format but not style of the response
+- Whether instructions are followed can be easily evaluated by a Python function
+Here are some examples of instructions we need:
 {seed_instructions_str}
+
+Do not generate instructions about writing style, using metaphor, or translation. Here are
+some examples of instructions we do not need:
+- Incorporate a famous historical quote seamlessly into your answer
+- Translate your answer into Pig Latin
+- Use only words that are also a type of food
+- Respond with a metaphor in every sentence
+- Write the response as if you are a character from a Shakespearean play
+
+Please generate one instruction per line in your response.
+Each line should contain a single instruction and nothing else.
 '''
 
 if __name__ == '__main__':
