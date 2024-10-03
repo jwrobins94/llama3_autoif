@@ -32,7 +32,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     with open(args.input) as f:
-        seed_instructions = f.readlines()
+        seed_instructions = f.read().splitlines()
         print(seed_instructions)
 
     tokenizer = load_tokenizer(args.hf_api_token)
