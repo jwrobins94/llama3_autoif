@@ -33,7 +33,6 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         seed_instructions = f.read().splitlines()
-        print(seed_instructions)
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
@@ -50,6 +49,7 @@ if __name__ == '__main__':
     print(prompt)
 
     batch = tokenizer([prompt], return_tensors='pt')
+    batch.to(model.device)
 
     max_new_tokens = 128
     outputs = model.generate(**batch, max_new_tokens=max_new_tokens, eos_token_id=tokenizer.eos_token_id, use_cache=True, do_sample=True, temperature=1.0)
