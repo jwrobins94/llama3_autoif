@@ -60,7 +60,7 @@ Now, write 3 test cases (one per line) for the following instruction: {instructi
 
 
 def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompts: list[str], stop_str: str) -> list[str]:
-    batch = tokenizer(prompts, return_tensors='pt')
+    batch = tokenizer(prompts, return_tensors='pt', padding=True, padding_side='left') # left padding so that completions are all at the end
     batch.to(model.device)
 
     outputs = model.generate(
