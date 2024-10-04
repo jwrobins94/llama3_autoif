@@ -41,6 +41,7 @@ if __name__ == '__main__':
                     ok = False
                 if ok:
                     num_passes[completion_idx] += 1
+        print(num_passes)
         
         chosen = []
         rejected = []
