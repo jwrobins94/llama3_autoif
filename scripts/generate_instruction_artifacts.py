@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
                 # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
                 fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
-                prompt += f'```\n{fn_prefix}'
+                prompt += f'```{fn_prefix}'
                 completion = generate_completion(model, tokenizer, prompt, '```')
                 verified_completion = fn_prefix + completion
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
                     tokenize=False
                 )
                 testcase_prefix = '{"response": "'
-                prompt_2 += f'```\n{testcase_prefix}'
+                prompt_2 += f'{testcase_prefix}'
                 completion = generate_completion(model, tokenizer, prompt_2, tokenizer.eos_token)
                 testcase_completion = testcase_prefix + completion
                 
