@@ -110,6 +110,7 @@ def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str
             chosen_tokens = tokenizer.apply_chat_template(
                 messages_chosen,
                 tokenize=True,
+                return_dict=True,
                 return_tensors='pt'
             )
 
@@ -120,6 +121,7 @@ def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str
             rejected_tokens = tokenizer.apply_chat_template(
                 messages_rejected,
                 tokenize=True,
+                return_dict=True,
                 return_tensors='pt'
             )
 
@@ -130,6 +132,7 @@ def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str
                 messages_context,
                 add_generation_prompt=True,
                 tokenize=True,
+                return_dict=True,
                 return_tensors='pt'
             )
             
