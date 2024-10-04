@@ -3,11 +3,48 @@ import torch
 
 class DPOLightningModel(lightning.LightningModule):
 
-    def __init__(self, model: torch.nn.Module, ref_model: torch.nn.Module, kl_beta: float):
+    def __init__(self,
+                 model: torch.nn.Module,
+                 ref_model: torch.nn.Module,
+                 kl_beta: float,
+                 lr: float,
+                 num_train_steps: int,
+                 warm_up_steps: int
+        ):
         super().__init__()
         self.model = model
         self.ref_model = ref_model
         self.kl_beta = kl_beta
+    
+    def get_grouped_params(self, no_decay=["bias", "LayerNorm.weight"]):
+            params_with_wd, params_without_wd = [], []
+            for n, p in self.model.named_parameters():
+                if any(nd in n for nd in no_decay):
+                    params_without_wd.append(p)
+                else:
+                    params_with_wd.append(p)
+            return [
+                {"params": params_with_wd, "weight_decay": self.weight_decay},
+                {"params": params_without_wd, "weight_decay": 0.0},
+            ]
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(self.get_grouped_params(),
+                                            lr=self.learning_rate,
+                                            betas=(self.beta_1, self.beta_2))
+
+        # Calculate total training steps
+        num_devices = self.trainer.num_devices
+        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[
+            torch.optim.lr_scheduler.LinearLR(optimizer, 1e-7 / self.learning_rate, 1.0, total_iters=self.warm_up),
+            torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, eta_min = 0.1 * self.learning_rate, T_max=self.num_train_steps // num_devices - self.warm_up)
+        ], milestones=[self.warm_up])
+        return [optimizer], {'scheduler': scheduler, 'interval': 'step', 'frequency': 1}
+    
+    def log_learning_rate(self):
+        optimizer = self.optimizers()
+        lr = optimizer.param_groups[0]['lr']
+        self.log('lr', lr, on_step=True, logger=True, prog_bar=True, rank_zero_only=True)
 
     def _compute_logprob_sum(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module, completion_lengths: torch.Tensor) -> torch.Tensor:
         batch_size = input_ids.shape[0]
