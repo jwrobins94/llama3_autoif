@@ -63,11 +63,12 @@ class DPOLightningModel(lightning.LightningModule):
         # logits has shape [batch, seq - 1, vocab_size]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
         
-        print(self.tokenizer.batch_decode(input_ids))
-        print(torch.exp(logprobs))
+        
 
         res = torch.zeros([batch_size], device=input_ids.device)
         for i, completion_length in enumerate(completion_lengths):
+            print(self.tokenizer.decode(input_ids[i, -completion_length:]))
+            print(torch.exp(logprobs[i, -completion_length:]))
             res[i] = torch.sum(logprobs[i, -completion_length:])
         return res
 
