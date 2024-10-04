@@ -69,7 +69,7 @@ if __name__ == '__main__':
             if '\n' in query:
                 query = query[:query.index('\n')]
             prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
-        completions = generate_completions(model, tokenizer, prompts, '\n', args.max_tokens)
+        completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
         for completion in completions:
             generated_instructions.extend(completion)
         print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
