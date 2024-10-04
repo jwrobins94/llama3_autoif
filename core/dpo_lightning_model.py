@@ -57,7 +57,7 @@ class DPOLightningModel(lightning.LightningModule):
                         attention_mask = attention_mask,
                         use_cache=False).logits[:, :-1]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
-        print(logprobs)
+        print(torch.exp(logprobs))
 
         res = torch.zeros([batch_size], device=input_ids.device)
         for i, completion_length in enumerate(completion_lengths):
