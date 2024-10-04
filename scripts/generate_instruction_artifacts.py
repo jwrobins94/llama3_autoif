@@ -20,6 +20,26 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def construct_verifier_prompt(instruction: str) -> str:
+    example_evaluate = json.dumps('''def evaluate(response: str) -> bool:
+    return 'B' in response''')
+
+    return f'''
+You are an expert for writing evaluation functions in Python to evaluate whether a response
+strictly follows an instruction.
+
+You will be provided with a single instruction.
+Please write a Python function named 'evaluate' to evaluate whether an input string 'response'
+follows this instruction. If it follows, simply return True, otherwise return False.
+
+Here is an example of a good output for the instruction: use the letter B at least once
+```
+{example_evaluate}
+```
+
+Place your answer in a code block, as in the example above.
+Here is your instruction: {instruction}'''
+
 
 def construct_test_and_verifier_prompt(instruction: str) -> str:
     example_evaluate = json.dumps('''def evaluate(response: str) -> bool:
@@ -68,13 +88,14 @@ if __name__ == '__main__':
 
     for instruction in instructions[:2]:
         prompt = tokenizer.apply_chat_template(
-            [{'role': 'user', 'content': construct_test_and_verifier_prompt(instruction)}],
+            [{'role': 'user', 'content': construct_verifier_prompt(instruction)}],
             add_generation_prompt=True,
             tokenize=False
         )
 
         # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
-        prompt += '```json'
+        fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
+        prompt += f'```\n{fn_prefix}'
 
         batch = tokenizer([prompt] * args.num_verifications, return_tensors='pt')
         batch.to(model.device)
@@ -86,14 +107,13 @@ if __name__ == '__main__':
             use_cache=True,
             do_sample=True,
             temperature=1.0,
-            top_p=0.9,
-            top_k=3,
             stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
         )
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)
         print(prompt)
         for completion in decoded:
+            completion = fn_prefix + completion # add back the function spec here
             if '```' in completion:
                 completion = completion[:completion.index('```')]
         
