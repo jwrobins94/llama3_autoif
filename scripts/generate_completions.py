@@ -4,9 +4,8 @@ import argparse
 import torch
 import json
 from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
-from datasets import load_dataset
 import random
-
+from data.data_utils import load_sharegpt_queries
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -24,31 +23,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final (instruction, verifiers, completions) tuples')
     return parser.parse_args()
 
-
-def extract_query(row) -> dict[str, str]:
-    conversations = row['conversations']
-    if not conversations:
-        return {'query': ''}
-    value = conversations[0]['value']
-    if not value:
-        return {'query': ''}
-    return {'query': value}
-
-def load_queries_dataset() -> list[str]:
-    # TODO allow picking the dataset from command line
-    data = load_dataset('anon8231489123/ShareGPT_Vicuna_unfiltered', data_files='ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json')
-    data_train = data['train']
-    data_train = data_train.map(
-        extract_query,
-        batched=False,
-        remove_columns=data_train.column_names,
-        load_from_cache_file=False # the cache creates a lot of problems when debugging
-    ).filter(lambda row : 5 <= len(row['query']) <= 200)
-
-    res = []
-    for row in data_train:
-        res.append(row['query'])
-    return res
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
     # this prompt is derived from the one in the paper
@@ -64,7 +38,7 @@ if __name__ == '__main__':
         lines = f.read().splitlines()
         instructions = list(map(json.loads, lines))
 
-    queries = load_queries_dataset()
+    queries = load_sharegpt_queries()
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
