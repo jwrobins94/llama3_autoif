@@ -76,10 +76,11 @@ if __name__ == '__main__':
         model.to('cuda:0')
 
     with open(args.output, 'w') as output_file:
-        for query_idx in range(args.queries_per_instruction):
-            # sample a query
-            query = queries[random.randint(0, len(queries) - 1)]
-            for instruction_idx, instruction_w_verifiers in enumerate(instructions):
+        for instruction_idx, instruction_w_verifiers in enumerate(instructions):
+            for query_idx in range(args.queries_per_instruction):
+                # sample a query
+                query = queries[random.randint(0, len(queries) - 1)]
+            
                 print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
 
                 instruction = instruction_w_verifiers['instruction']
