@@ -30,11 +30,7 @@ the following requirements:
 - Instructions constrain the format but not style of the response
 - Whether instructions are followed can be easily evaluated by a Python function
 Here are some examples of instructions we need:
-{seed_instructions_str}
-
-Please generate one instruction per line in your response.
-Each line should contain a single instruction and nothing else. Do not prefix your instructions with '-', numbers, or bullet points.
-'''
+{seed_instructions_str}'''
 
 if __name__ == '__main__':
     args = parse_args()
