@@ -59,8 +59,8 @@ Here are 3 example test cases for the instruction: use the letter B at least onc
 Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
 
 
-def generate_completion(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompt: str, stop_str: str) -> str:
-    batch = tokenizer([prompt], return_tensors='pt')
+def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompts: list[str], stop_str: str) -> list[str]:
+    batch = tokenizer(prompts, return_tensors='pt')
     batch.to(model.device)
 
     outputs = model.generate(
@@ -73,9 +73,10 @@ def generate_completion(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFa
         stopping_criteria=[StopStringCriteria(tokenizer, [stop_str])]
     )
     outputs = outputs[:, batch['input_ids'].shape[-1]:]
-    decoded = tokenizer.batch_decode(outputs)[0]
-    if stop_str in decoded:
-        decoded = decoded[:decoded.index(stop_str)]
+    decoded = tokenizer.batch_decode(outputs)
+    for i in range(len(decoded)):
+        if stop_str in decoded[i]:
+            decoded[i] = decoded[i][:decoded.index(stop_str)]
     return decoded
 
 if __name__ == '__main__':
@@ -93,42 +94,44 @@ if __name__ == '__main__':
     with open(args.output, 'w') as output_file:
         for instruction_idx, instruction in enumerate(instructions):
             print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
-            verification_strs = []
-            testcase_strs = []
-            for _ in range(args.num_verifications):
-                messages = [{'role': 'user', 'content': construct_verifier_prompt(instruction)}]
-                prompt = tokenizer.apply_chat_template(
+            messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(instruction)}] for _ in range(args.num_verifications)]
+            prompts = [
+                    tokenizer.apply_chat_template(
+                    messages,
+                    add_generation_prompt=True,
+                    tokenize=False
+                ) for messages in messages_mat
+            ]
+
+            fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
+            for i, prompt in enumerate(prompts):
+                prompts[i] = prompt + f'```{fn_prefix}'
+
+            completions = generate_completions(model, tokenizer, prompts, '```')
+            verified_completions = [fn_prefix + completion for completion in completions]
+
+            for i, completion in enumerate(completions):
+                messages_mat[i].append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
+                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
+
+            prompts_2 = [
+                tokenizer.apply_chat_template(
                     messages,
                     add_generation_prompt=True,
                     tokenize=False
                 )
-
-                # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
-                fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
-                prompt += f'```{fn_prefix}'
-                completion = generate_completion(model, tokenizer, prompt, '```')
-                verified_completion = fn_prefix + completion
-
-                messages.append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
-                messages.append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
-
-                prompt_2 = tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    tokenize=False
-                )
-                testcase_prefix = '{"response": "'
-                prompt_2 += f'{testcase_prefix}'
-                completion = generate_completion(model, tokenizer, prompt_2, tokenizer.eos_token)
-                testcase_completion = testcase_prefix + completion
-                
-                verification_strs.append(verified_completion)
-                testcase_strs.append(testcase_completion)
+                for messages in messages_mat
+            ]
+            testcase_prefix = '{"response": "'
+            for i, prompt in enumerate(prompts_2):
+                prompts_2[i] = prompt + f'{testcase_prefix}'
+            completions = generate_completions(model, tokenizer, prompts_2, tokenizer.eos_token)
+            testcase_completions = [testcase_prefix + completion for completion in completions]
         
             obj = {
                 'instruction': instruction,
-                'verifiers': verification_strs,
-                'testcases': testcase_strs
+                'verifiers': verified_completions,
+                'testcases': testcase_completions
             }
             output_file.write(json.dumps(obj))
             output_file.write('\n')
