@@ -37,6 +37,7 @@ if __name__ == '__main__':
                 try:
                     ok = evaluate(completion) # evaluate is loaded dynamically via exec
                 except:
+                    print('exception!')
                     ok = False
                 if ok:
                     num_passes[completion_idx] += 1
