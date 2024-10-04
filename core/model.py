@@ -32,6 +32,7 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
     )
 
     if state_dict_path:
+        print(f'Loading state dict: {state_dict_path}')
         state_dict = load_state_dict(state_dict_path)
         pretrained_name = None # don't reload weights since we're going to overwrite them anyways
     else:
