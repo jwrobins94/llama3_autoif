@@ -198,7 +198,6 @@ if __name__ == '__main__':
     )
 
     trainer.fit(model=lightning_model, train_dataloaders=dataloader)
-    logger.close()
 
     @rank_zero_only
     def save(model):
