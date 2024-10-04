@@ -9,6 +9,8 @@ setup(
         'torch',
         'lm_eval',
         'langdetect',
-        'immutabledict'
+        'immutabledict',
+        'deepspeed',
+        'flash_attn'
     ]
 )

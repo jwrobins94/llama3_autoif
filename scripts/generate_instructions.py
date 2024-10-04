@@ -2,6 +2,7 @@ from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
+import time
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -14,6 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
+    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     return parser.parse_args()
 
 def construct_prompt(seed_instructions: list[str]) -> str:
@@ -47,6 +49,14 @@ if __name__ == '__main__':
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
+    if args.deepspeed:
+        import deepspeed
+        ds_engine = deepspeed.init_inference(model,
+                                 dtype=torch.bfloat16,
+                                 checkpoint=None, # TODO load checkpoint from args
+                                 )
+        model = ds_engine.module
+
     if torch.cuda.is_available():
         model.to('cuda:0')
 
@@ -61,6 +71,7 @@ if __name__ == '__main__':
     batch.to(model.device)
 
     generated_instructions = []
+    start_ts = time.time()
     while len(generated_instructions) < args.limit:
         outputs = model.generate(
             **batch,
@@ -73,8 +84,13 @@ if __name__ == '__main__':
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)
         for completion in decoded:
+            if tokenizer.eos_token in completion:
+                # prune suffixes for batch size > 1
+                completion = completion[:completion.index(tokenizer.eos_token)]
             generated_instructions.extend(completion.splitlines())
         print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
+    end_ts = time.time()
+    print(f'Generated instructions in {end_ts - start_ts} seconds.')
 
     with open(args.output, 'w') as f:
         # we write out all of the generated instructions here
