@@ -29,7 +29,7 @@ def construct_test_and_verifier_prompt(instruction: str) -> str:
 You are an expert for writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
 
-Here is the instruction: {instruction}
+You will be provided with a single instruction.
 Please write a Python function named 'evaluate' to evaluate whether an input string 'response'
 follows this instruction. If it follows, simply return True, otherwise return False.
 Please respond with a single JSON that includes the evaluation function in the key 'func',
@@ -48,10 +48,11 @@ Here is an example of a good output for the instruction: use the letter B at lea
 ```json
 {{
 "func": {example_evaluate},
-"cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }} ]
+"cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }}, {{ "input": "CAB", "output": "True" }} ]
 }}```
 
-Place your answer in a code block, as in the example above.'''
+Place your answer in a code block, as in the example above.
+Here is your instruction: {instruction}'''
 
 if __name__ == '__main__':
     args = parse_args()
