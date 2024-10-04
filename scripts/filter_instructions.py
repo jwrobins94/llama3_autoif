@@ -106,6 +106,7 @@ def passes_validation(instruction: str, verifiers: list[str], testcases: list[st
     # TODO note!!! Verifiers and test cases have been parsed in the returned object
     return {
         'instruction': instruction,
+        'test_cases': test_cases,
         'verifiers': verifiers,
     }, True
         
