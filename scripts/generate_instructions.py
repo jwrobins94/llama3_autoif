@@ -84,6 +84,9 @@ if __name__ == '__main__':
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
         decoded = tokenizer.batch_decode(outputs)
         for completion in decoded:
+            if tokenizer.eos_token in completion:
+                # prune suffixes for batch size > 1
+                completion = completion[:completion.index(tokenizer.eos_token)]
             generated_instructions.extend(completion.splitlines())
         print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
     end_ts = time.time()
