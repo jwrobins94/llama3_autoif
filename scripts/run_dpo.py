@@ -6,6 +6,7 @@ import json
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizerFast
 from typing import Optional
+from dataclasses import dataclass
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -21,6 +22,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 # TODO extract this out & cite source from my old project
+@dataclass
 class RewardDataCollatorWithPadding:
 
     tokenizer: PreTrainedTokenizerFast
