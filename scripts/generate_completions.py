@@ -53,7 +53,7 @@ def load_queries_dataset() -> list[str]:
 def construction_generation_prompt(query: str, instruction: str) -> str:
     # this prompt is derived from the one in the paper
     # TODO!!!!!!!!!!!!!!!!!! Replace this with actual queries.
-    return f'''How many legs does a typical dog have?
+    return f'''{query}
 {instruction}
 '''
 
