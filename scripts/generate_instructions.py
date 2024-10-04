@@ -53,7 +53,7 @@ if __name__ == '__main__':
         import deepspeed
         ds_engine = deepspeed.init_inference(model,
                                  dtype=torch.float16,
-                                 checkpoint=None if args.pre_load_checkpoint else args.checkpoint_json,
+                                 checkpoint=None, # TODO load checkpoint from args
                                  replace_with_kernel_inject=True)
         model = ds_engine.module
 
