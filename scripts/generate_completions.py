@@ -82,7 +82,6 @@ if __name__ == '__main__':
         
             instruction = instruction_w_verifiers['instruction']
 
-            # TODO construction_generation_prompt(QUERY, ...)
             messages_mat = []
             for query in sampled_queries:
                 for _ in range(args.num_completions):
