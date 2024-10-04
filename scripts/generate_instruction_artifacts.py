@@ -22,11 +22,11 @@ def parse_args() -> argparse.Namespace:
 
 def construct_verifier_prompt(instruction: str) -> str:
     return f'''
-You are an expert for writing evaluation functions in Python to evaluate whether a response
+You are an expert at writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
 
 You will be provided with a single instruction.
-Please write a Python function named 'evaluate' to evaluate whether an input string 'response'
+Your task is to write a Python function named 'evaluate' to evaluate whether an input string 'response'
 follows this instruction. If it follows, simply return True, otherwise return False.
 
 Here is an example of a good output for the instruction: use the letter B at least once
@@ -35,8 +35,13 @@ def evaluate(response: str) -> bool:
     return 'B' in response
 ```
 
-Place your answer in a code block, as in the example above.
-Here is your instruction: {instruction}'''
+Here is an example of a good output for the instruction: answer in at most 27 characters
+```
+def evaluate(response: str) -> bool:
+    return len(response) <= 27
+```
+
+Now, please write the evaluate function for the following instruction: {instruction}'''
 
 
 def construct_test_and_verifier_prompt(instruction: str) -> str:
