@@ -77,11 +77,11 @@ if __name__ == '__main__':
 
     with open(args.output, 'w') as output_file:
         for instruction_idx, instruction_w_verifiers in enumerate(instructions):
+            print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
             for query_idx in range(args.queries_per_instruction):
                 # sample a query
                 query = queries[random.randint(0, len(queries) - 1)]
             
-                print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
 
                 instruction = instruction_w_verifiers['instruction']
 
