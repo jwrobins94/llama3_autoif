@@ -21,9 +21,6 @@ def parse_args() -> argparse.Namespace:
 
 
 def construct_verifier_prompt(instruction: str) -> str:
-    example_evaluate = json.dumps('''def evaluate(response: str) -> bool:
-    return 'B' in response''')
-
     return f'''
 You are an expert for writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
@@ -34,7 +31,8 @@ follows this instruction. If it follows, simply return True, otherwise return Fa
 
 Here is an example of a good output for the instruction: use the letter B at least once
 ```
-{example_evaluate}
+def evaluate(response: str) -> bool:
+    return 'B' in response
 ```
 
 Place your answer in a code block, as in the example above.
