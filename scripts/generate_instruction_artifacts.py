@@ -85,14 +85,14 @@ if __name__ == '__main__':
                 max_new_tokens=args.max_tokens,
                 eos_token_id=tokenizer.eos_token_id,
                 use_cache=True,
-                do_sample=False,
-                temperature=0.0,
+                do_sample=True,
+                temperature=1.0,
                 stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
             )
             outputs = outputs[:, batch['input_ids'].shape[-1]:]
             decoded = tokenizer.batch_decode(outputs)[0]
-            if decoded.endswith('```'):
-                decoded = decoded[:-3]
+            if '```' in decoded:
+                decoded = decoded[:decoded.index('```')]
             print(prompt)
             print(decoded)
             print('------------')
