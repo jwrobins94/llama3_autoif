@@ -76,7 +76,7 @@ def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerF
     decoded = tokenizer.batch_decode(outputs)
     for i in range(len(decoded)):
         if stop_str in decoded[i]:
-            decoded[i] = decoded[i][:decoded.index(stop_str)]
+            decoded[i] = decoded[i][:decoded[i].index(stop_str)]
     return decoded
 
 if __name__ == '__main__':
