@@ -46,6 +46,7 @@ if __name__ == '__main__':
         rejected = []
         for completion_ix, completion in enumerate(completions):
             pass_rate = num_passes[completion_idx] / len(completions)
+            print(f'Pass rate: {pass_rate}')
             if pass_rate >= 0.5:
                 chosen.append(completion)
             else:
