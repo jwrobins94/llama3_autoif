@@ -33,7 +33,6 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         lines = f.read().splitlines()
-        print(lines)
         instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
