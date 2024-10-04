@@ -57,6 +57,7 @@ if __name__ == '__main__':
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
         sorted_instances.append({
             'query': instance['query'],
+            'instruction': instance['instruction'],
             'chosen': chosen,
             'rejected': rejected
         })
