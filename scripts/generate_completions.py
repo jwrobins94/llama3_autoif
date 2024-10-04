@@ -87,6 +87,9 @@ if __name__ == '__main__':
                 for _ in range(args.num_completions):
                     messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction)}])
 
+                    instruction_neg = f'Ensure your response does not meet the following criteria: "{instruction}"'
+                    messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction_neg)}])
+
             prompts = [
                     tokenizer.apply_chat_template(
                     messages,
@@ -97,9 +100,9 @@ if __name__ == '__main__':
 
             completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
 
-            
+            completions_per_query = args.num_completions * 2
             for query_idx, query in enumerate(sampled_queries):
-                query_completions = completions[query_idx * args.num_completions: (query_idx + 1) * args.num_completions]
+                query_completions = completions[query_idx * completions_per_query: (query_idx + 1) * completions_per_query]
             
                 res = dict(instruction_w_verifiers) # make a copy
                 res['query'] = query
