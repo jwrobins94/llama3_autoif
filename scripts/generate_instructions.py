@@ -30,7 +30,10 @@ the following requirements:
 - Instructions constrain the format but not style of the response
 - Whether instructions are followed can be easily evaluated by a Python function
 Here are some examples of instructions we need:
-{seed_instructions_str}'''
+{seed_instructions_str}
+
+Provide a list of unique (Query, Instruction) pairs that follow the same style of the examples.
+Each line should alternate between Query and Instruction.'''
 
 if __name__ == '__main__':
     args = parse_args()
