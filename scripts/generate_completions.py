@@ -97,6 +97,7 @@ if __name__ == '__main__':
                 completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
                 
                 res = dict(instruction_w_verifiers) # make a copy
+                res['query'] = query
                 res['completions'] = completions
 
                 output_file.write(json.dumps(res))
