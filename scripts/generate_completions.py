@@ -78,32 +78,26 @@ if __name__ == '__main__':
     with open(args.output, 'w') as output_file:
         for instruction_idx, instruction_w_verifiers in enumerate(instructions):
             print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
-            sampled_queries = [queries[random.randint(0, len(queries) - 1)] for _ in range(args.queries_per_instruction)]
-        
-            instruction = instruction_w_verifiers['instruction']
-
-            messages_mat = []
-            for query in sampled_queries:
-                for _ in range(args.num_completions):
-                    messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction)}])
-
-            prompts = [
-                    tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    tokenize=False
-                ) for messages in messages_mat
-            ]
-
-            completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
-
+            for query_idx in range(args.queries_per_instruction):
+                # sample a query
+                query = queries[random.randint(0, len(queries) - 1)]
             
-            for query_idx, query in enumerate(sampled_queries):
-                query_completions = completions[query_idx * args.num_completions: (query_idx + 1) * args.num_completions]
-            
+
+                instruction = instruction_w_verifiers['instruction']
+                messages_mat = [[{'role': 'user', 'content': construction_generation_prompt(query, instruction)}] for _ in range(args.num_completions)]
+                prompts = [
+                        tokenizer.apply_chat_template(
+                        messages,
+                        add_generation_prompt=True,
+                        tokenize=False
+                    ) for messages in messages_mat
+                ]
+
+                completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
+                
                 res = dict(instruction_w_verifiers) # make a copy
                 res['query'] = query
-                res['completions'] = query_completions
+                res['completions'] = completions
 
                 output_file.write(json.dumps(res))
                 output_file.write('\n')
