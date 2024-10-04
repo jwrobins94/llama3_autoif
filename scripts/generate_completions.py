@@ -97,6 +97,7 @@ if __name__ == '__main__':
                     tokenize=False
                 ) for messages in messages_mat
             ]
+            print(prompts)
 
             completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
 
