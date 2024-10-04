@@ -60,7 +60,7 @@ if __name__ == '__main__':
                 ) for messages in messages_mat
             ]
 
-            completions = generate_completions(model, tokenizer, prompts, '```', args.max_tokens)
+            completions = generate_completions(model, tokenizer, prompts, tokenizer.eos_token, args.max_tokens)
             
             res = dict(instruction_w_verifiers) # make a copy
             res['completions'] = completions
