@@ -196,7 +196,8 @@ if __name__ == '__main__':
         precision='bf16-mixed', # TODO
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
         logger=logger,
-        log_every_n_steps=1
+        log_every_n_steps=1,
+        enable_checkpointing=False
     )
 
     trainer.fit(model=lightning_model, train_dataloaders=dataloader)
