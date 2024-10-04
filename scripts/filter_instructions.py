@@ -121,7 +121,7 @@ if __name__ == '__main__':
         for instance in orig_instances:
             future = executor.submit(passes_validation, **instance)
             try:
-                filtered_instance, ok = future.result(1.0) # spent at most 1 second per instance
+                filtered_instance, ok = future.result(5.0) # spent at most 5 seconds per instance
             except TimeoutError:
                 continue
             print(instance['instruction'], ok)
@@ -136,5 +136,5 @@ if __name__ == '__main__':
     
     with open(args.output, 'w') as output_file:
         for instance in filtered_instances:
-            output_file.write(json.dumps(instance, indent=2))
+            output_file.write(json.dumps(instance))
             output_file.write('\n')

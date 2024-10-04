@@ -3,8 +3,7 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from transformers import StopStringCriteria, PreTrainedTokenizerFast
-from transformers.models.llama.modeling_llama import LlamaDecoderLayer
+from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -12,7 +11,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Context length')
+    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
     parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
@@ -61,26 +60,6 @@ Here are 3 example test cases for the instruction: use the letter B at least onc
 Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
 
 
-def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompts: list[str], stop_str: str) -> list[str]:
-    batch = tokenizer(prompts, return_tensors='pt', padding=True, padding_side='left') # left padding so that completions are all at the end
-    batch.to(model.device)
-
-    outputs = model.generate(
-        **batch,
-        max_new_tokens=args.max_tokens,
-        eos_token_id=tokenizer.eos_token_id,
-        use_cache=True,
-        do_sample=True,
-        temperature=1.0,
-        stopping_criteria=[StopStringCriteria(tokenizer, [stop_str])]
-    )
-    outputs = outputs[:, batch['input_ids'].shape[-1]:]
-    decoded = tokenizer.batch_decode(outputs)
-    for i in range(len(decoded)):
-        if stop_str in decoded[i]:
-            decoded[i] = decoded[i][:decoded[i].index(stop_str)]
-    return decoded
-
 if __name__ == '__main__':
     args = parse_args()
 
@@ -91,14 +70,7 @@ if __name__ == '__main__':
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
     if args.deepspeed:
-        import deepspeed
-        #deepspeed.init_distributed()
-        ds_engine = deepspeed.init_inference(model,
-                                 dtype=torch.bfloat16,
-                                 #injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
-                                 checkpoint=None, # TODO load checkpoint from args
-                                 )
-        model = ds_engine.module
+        model = wrap_with_deepspeed_inference(model)
 
     if torch.cuda.is_available():
         model.to('cuda:0')
@@ -119,7 +91,7 @@ if __name__ == '__main__':
             for i, prompt in enumerate(prompts):
                 prompts[i] = prompt + f'```{fn_prefix}'
 
-            completions = generate_completions(model, tokenizer, prompts, '```')
+            completions = generate_completions(model, tokenizer, prompts, '```', args.max_tokens)
             verified_completions = [fn_prefix + completion for completion in completions]
 
             for i, completion in enumerate(completions):
@@ -137,7 +109,7 @@ if __name__ == '__main__':
             testcase_prefix = '{"response": "'
             for i, prompt in enumerate(prompts_2):
                 prompts_2[i] = prompt + f'{testcase_prefix}'
-            completions = generate_completions(model, tokenizer, prompts_2, tokenizer.eos_token)
+            completions = generate_completions(model, tokenizer, prompts_2, tokenizer.eos_token, args.max_tokens)
             testcase_completions = [testcase_prefix + completion for completion in completions]
         
             obj = {
