@@ -49,12 +49,12 @@ Now, please write the evaluate function for the following instruction: {instruct
 def construct_test_case_prompt(instruction: str) -> str:
     return f'''Now write 3 test cases for this verification function.
 Write one test case per line in JSON format:
-{{"response": "some response", "result": "true" or "false"}}
+{{"response": "some response", "result": true or false}}
 
 Here are 3 example test cases for the instruction: use the letter B at least once
-{{"response": "Bar", "result": "true"}}
-{{"response": "Foo", "result": "false"}}
-{{"response": "CAB", "result": "true"}}
+{{"response": "Bar", "result": true}}
+{{"response": "Foo", "result": false}}
+{{"response": "CAB", "result": true}}
 
 Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
 
