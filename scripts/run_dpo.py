@@ -179,6 +179,7 @@ if __name__ == '__main__':
     lightning_model = DPOLightningModel(
         model,
         ref_model,
+        tokenizer,
         args.kl_beta,
         args.lr,
         len(dataloader),
