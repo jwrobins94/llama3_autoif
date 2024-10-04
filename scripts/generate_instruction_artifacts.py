@@ -92,11 +92,10 @@ if __name__ == '__main__':
 
     if args.deepspeed:
         import deepspeed
-        deepspeed.init_distributed()
+        #deepspeed.init_distributed()
         ds_engine = deepspeed.init_inference(model,
                                  dtype=torch.bfloat16,
-                                 use_triton=True,
-                                 injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
+                                 #injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
                                  checkpoint=None, # TODO load checkpoint from args
                                  )
         model = ds_engine.module
