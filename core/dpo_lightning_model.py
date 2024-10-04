@@ -1,11 +1,13 @@
 import lightning
 import torch
+from transformers import PreTrainedTokenizerFast
 
 class DPOLightningModel(lightning.LightningModule):
 
     def __init__(self,
                  model: torch.nn.Module,
                  ref_model: torch.nn.Module,
+                 tokenizer: PreTrainedTokenizerFast,
                  kl_beta: float,
                  lr: float,
                  num_train_steps: int,
@@ -18,6 +20,8 @@ class DPOLightningModel(lightning.LightningModule):
         self.learning_rate = lr
         self.num_train_steps = num_train_steps
         self.warm_up_steps = warm_up_steps
+
+        self.tokenizer = tokenizer
     
     def get_grouped_params(self, no_decay=["bias", "LayerNorm.weight"]):
             params_with_wd, params_without_wd = [], []
@@ -57,6 +61,8 @@ class DPOLightningModel(lightning.LightningModule):
                         attention_mask = attention_mask,
                         use_cache=False).logits[:, :-1]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
+        
+        print(self.tokenizer.batch_decode(input_ids))
         print(torch.exp(logprobs))
 
         res = torch.zeros([batch_size], device=input_ids.device)
