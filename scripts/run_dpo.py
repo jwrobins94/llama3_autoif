@@ -168,8 +168,6 @@ if __name__ == '__main__':
     tokenizer = load_tokenizer(args.hf_api_token)
 
     dataloader = construct_dataloader(tokenizer, data, args.batch_size)
-    for batch in dataloader:
-        print(batch)
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
     # load the model a second time as our reference policy for the KL penalty

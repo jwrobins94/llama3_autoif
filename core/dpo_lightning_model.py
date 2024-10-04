@@ -15,7 +15,7 @@ class DPOLightningModel(lightning.LightningModule):
         self.model = model
         self.ref_model = ref_model
         self.kl_beta = kl_beta
-        self.lr = lr
+        self.learning_rate = lr
         self.num_train_steps = num_train_steps
         self.warm_up_steps = warm_up_steps
     
