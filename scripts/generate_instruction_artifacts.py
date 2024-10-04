@@ -124,12 +124,12 @@ if __name__ == '__main__':
                 verification_strs.append(verified_completion)
                 testcase_strs.append(testcase_completion)
         
-        obj = {
-            'instruction': instruction,
-            'verifiers': verification_strs,
-            'testcases': testcase_strs
-        }
-        output_file.write(json.dumps(obj))
-        output_file.write('\n')
-        output_file.flush()
+            obj = {
+                'instruction': instruction,
+                'verifiers': verification_strs,
+                'testcases': testcase_strs
+            }
+            output_file.write(json.dumps(obj))
+            output_file.write('\n')
+            output_file.flush()
 
