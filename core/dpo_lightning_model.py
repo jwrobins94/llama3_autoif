@@ -15,6 +15,9 @@ class DPOLightningModel(lightning.LightningModule):
         self.model = model
         self.ref_model = ref_model
         self.kl_beta = kl_beta
+        self.lr = lr
+        self.num_train_steps = num_train_steps
+        self.warm_up_steps = warm_up_steps
     
     def get_grouped_params(self, no_decay=["bias", "LayerNorm.weight"]):
             params_with_wd, params_without_wd = [], []
@@ -24,7 +27,7 @@ class DPOLightningModel(lightning.LightningModule):
                 else:
                     params_with_wd.append(p)
             return [
-                {"params": params_with_wd, "weight_decay": self.weight_decay},
+                {"params": params_with_wd, "weight_decay": 0.0}, # TODO consider adding weight decay later
                 {"params": params_without_wd, "weight_decay": 0.0},
             ]
 
