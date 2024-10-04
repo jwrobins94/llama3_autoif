@@ -25,8 +25,6 @@ if __name__ == '__main__':
     for instance in instances:
         # load completions
         completions = instance['completions']
-        print(completions)
-
         num_passes = [0] * len(completions)
 
         # process each verifier
@@ -36,13 +34,10 @@ if __name__ == '__main__':
             for completion_idx, completion in enumerate(completions):
                 try:
                     ok = evaluate(completion) # evaluate is loaded dynamically via exec
-                    print(f'Function call completed: {ok}')
                 except:
                     ok = False
                 if ok:
-                    num_passes[completion_idx] += 1
-        print(num_passes)
-        
+                    num_passes[completion_idx] += 1        
         chosen = []
         rejected = []
         num_verifiers = len(instance['verifiers'])
