@@ -3,7 +3,7 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from transformers import StopStringCriteria
+from transformers import StopStringCriteria, PreTrainedTokenizerFast
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -21,6 +21,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def construct_verifier_prompt(instruction: str) -> str:
+    # this prompt is derived from the one in the paper
+    # however, with the LLama 8B models I had more success when breaking up the task into instructions, then verifications
     return f'''
 You are an expert at writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
@@ -44,38 +46,37 @@ def evaluate(response: str) -> bool:
 Now, please write the evaluate function for the following instruction: {instruction}'''
 
 
-def construct_test_and_verifier_prompt(instruction: str) -> str:
-    example_evaluate = json.dumps('''def evaluate(response: str) -> bool:
-    return 'B' in response''')
+def construct_test_case_prompt(instruction: str) -> str:
+    return f'''Now write 3 test cases for this verification function.
+Write one test case per line in JSON format:
+{{"response": "some response", "result": "true" or "false"}}
 
-    return f'''
-You are an expert for writing evaluation functions in Python to evaluate whether a response
-strictly follows an instruction.
+Here are 3 example test cases for the instruction: use the letter B at least once
+{{"response": "Bar", "result": "true"}}
+{{"response": "Foo", "result": "false"}}
+{{"response": "CAB", "result": "true"}}
 
-You will be provided with a single instruction.
-Please write a Python function named 'evaluate' to evaluate whether an input string 'response'
-follows this instruction. If it follows, simply return True, otherwise return False.
-Please respond with a single JSON that includes the evaluation function in the key 'func',
-and a list of three test cases in the key 'cases', which includes an input in the key 'input' and
-an expected output in the key 'output' (True or False).
+Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
 
-Here is the expected JSON format:
-```json
-{{
-"func": "JSON Str“,
-"cases": [ {{ "input": "str", "output": "True" }}, {{ "input": "str", "output": "False" }} ]
-}}
-```
 
-Here is an example of a good output for the instruction: use the letter B at least once
-```json
-{{
-"func": {example_evaluate},
-"cases": [ {{ "input": "foo", "output": "False" }}, {{ "input": "Bar", "output": "True" }}, {{ "input": "CAB", "output": "True" }} ]
-}}```
+def generate_completion(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompt: str, stop_str: str) -> str:
+    batch = tokenizer([prompt], return_tensors='pt')
+    batch.to(model.device)
 
-Place your answer in a code block, as in the example above.
-Here is your instruction: {instruction}'''
+    outputs = model.generate(
+        **batch,
+        max_new_tokens=args.max_tokens,
+        eos_token_id=tokenizer.eos_token_id,
+        use_cache=True,
+        do_sample=True,
+        temperature=1.0,
+        stopping_criteria=[StopStringCriteria(tokenizer, [stop_str])]
+    )
+    outputs = outputs[:, batch['input_ids'].shape[-1]:]
+    decoded = tokenizer.batch_decode(outputs)[0]
+    if stop_str in decoded:
+        completion = completion[:completion.index(stop_str)]
+    return decoded
 
 if __name__ == '__main__':
     args = parse_args()
@@ -90,36 +91,34 @@ if __name__ == '__main__':
         model.to('cuda:0')
 
     for instruction in instructions[:2]:
-        prompt = tokenizer.apply_chat_template(
-            [{'role': 'user', 'content': construct_verifier_prompt(instruction)}],
-            add_generation_prompt=True,
-            tokenize=False
-        )
+        for _ in range(args.num_verifications):
+            print(instruction)
+            messages = [{'role': 'user', 'content': construct_verifier_prompt(instruction)}]
+            prompt = tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                tokenize=False
+            )
 
-        # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
-        fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
-        prompt += f'```\n{fn_prefix}'
+            # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
+            fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
+            prompt += f'```\n{fn_prefix}'
+            completion = generate_completion(model, tokenizer, prompt, '```')
+            verified_completion = fn_prefix + completion
+            print(verified_completion)
 
-        batch = tokenizer([prompt] * args.num_verifications, return_tensors='pt')
-        batch.to(model.device)
+            messages.append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
+            messages.append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
 
-        outputs = model.generate(
-            **batch,
-            max_new_tokens=args.max_tokens,
-            eos_token_id=tokenizer.eos_token_id,
-            use_cache=True,
-            do_sample=True,
-            temperature=1.0,
-            stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
-        )
-        outputs = outputs[:, batch['input_ids'].shape[-1]:]
-        decoded = tokenizer.batch_decode(outputs)
-        print(prompt)
-        for completion in decoded:
-            completion = fn_prefix + completion # add back the function spec here
-            if '```' in completion:
-                completion = completion[:completion.index('```')]
-        
-            print(completion)
+            prompt_2 = tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                tokenize=False
+            )
+            testcase_prefix = '{"response": "'
+            prompt_2 += f'```\n{testcase_prefix}'
+            completion = generate_completion(model, tokenizer, prompt_2, tokenizer.eos_token)
+            testcase_completion = testcase_prefix + completion
+            print(testcase_completion)
         print('------------')
 
