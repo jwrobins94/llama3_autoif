@@ -185,6 +185,7 @@ if __name__ == '__main__':
         args.warm_up_steps
     )
 
+    logger = WandbLogger()
     trainer = lightning.Trainer(
         accelerator='auto',
         devices='auto',
@@ -192,10 +193,12 @@ if __name__ == '__main__':
         accumulate_grad_batches=1, # TODO
         precision='bf16-mixed', # TODO
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
-        logger=WandbLogger()
+        logger=logger,
+        log_every_n_steps=1
     )
 
     trainer.fit(model=lightning_model, train_dataloaders=dataloader)
+    logger.close()
 
     @rank_zero_only
     def save(model):
