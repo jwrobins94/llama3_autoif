@@ -52,6 +52,9 @@ Now, please write the evaluate function for the following instruction: {instruct
 
 
 def construct_test_case_prompt(instruction: str) -> str:
+    # A common failure mode I've noticed is that the test cases will be overly simple.
+    # As a result, we will have poor screening of verification functions and our actual model generations
+    # will have a 100% pass or fail rate.
     return f'''Now write 3 test cases for this verification function.
 Write one test case per line in JSON format:
 {{"response": "some response", "result": true or false}}
