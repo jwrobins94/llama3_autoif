@@ -3,6 +3,7 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import time
+from transformers import StopStringCriteria
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -78,6 +79,7 @@ if __name__ == '__main__':
             **batch,
             max_new_tokens=args.tokens_per_completion,
             eos_token_id=tokenizer.eos_token_id,
+            stopping_criteria=[StopStringCriteria(tokenizer, tokenizer.eos_token)],
             use_cache=True,
             do_sample=True,
             temperature=1.0
