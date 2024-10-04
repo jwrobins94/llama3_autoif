@@ -91,7 +91,7 @@ if __name__ == '__main__':
             )
             outputs = outputs[:, batch['input_ids'].shape[-1]:]
             decoded = tokenizer.batch_decode(outputs)[0]
-            if decoded.ends('```'):
+            if decoded.endswith('```'):
                 decoded = decoded[:-3]
             print(prompt)
             print(decoded)
