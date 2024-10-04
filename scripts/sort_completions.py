@@ -1,7 +1,6 @@
 import argparse
 import json
-from typing import Callable, Optional
-import multiprocessing
+from typing import Callable
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to filter (instruction, verifiers, test_cases) tuples for self-consistency')
