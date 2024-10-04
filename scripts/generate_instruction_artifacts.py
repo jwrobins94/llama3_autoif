@@ -65,7 +65,6 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    # TODO batch this
     for instruction in instructions[:2]:
         prompt = tokenizer.apply_chat_template(
             [{'role': 'user', 'content': construct_test_and_verifier_prompt(instruction)}],
@@ -76,24 +75,25 @@ if __name__ == '__main__':
         # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
         prompt += '```json'
 
-        for _ in range(args.num_verifications):
-            batch = tokenizer([prompt], return_tensors='pt')
-            batch.to(model.device)
+        batch = tokenizer([prompt] * args.num_verifications, return_tensors='pt')
+        batch.to(model.device)
 
-            outputs = model.generate(
-                **batch,
-                max_new_tokens=args.max_tokens,
-                eos_token_id=tokenizer.eos_token_id,
-                use_cache=True,
-                do_sample=True,
-                temperature=1.0,
-                stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
-            )
-            outputs = outputs[:, batch['input_ids'].shape[-1]:]
-            decoded = tokenizer.batch_decode(outputs)[0]
-            if '```' in decoded:
-                decoded = decoded[:decoded.index('```')]
-            print(prompt)
-            print(decoded)
-            print('------------')
+        outputs = model.generate(
+            **batch,
+            max_new_tokens=args.max_tokens,
+            eos_token_id=tokenizer.eos_token_id,
+            use_cache=True,
+            do_sample=True,
+            temperature=1.0,
+            stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
+        )
+        outputs = outputs[:, batch['input_ids'].shape[-1]:]
+        decoded = tokenizer.batch_decode(outputs)
+        print(prompt)
+        for completion in decoded:
+            if '```' in completion:
+                completion = completion[:completion.index('```')]
+        
+            print(completion)
+        print('------------')
 
