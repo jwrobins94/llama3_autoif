@@ -32,7 +32,9 @@ if __name__ == '__main__':
     args = parse_args()
 
     with open(args.input) as f:
-        instructions = list(map(json.loads, f.read().splitlines()))
+        lines = f.read().splitlines()
+        print(lines)
+        instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
