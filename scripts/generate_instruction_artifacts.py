@@ -90,35 +90,45 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    for instruction in instructions[:2]:
-        for _ in range(args.num_verifications):
-            print(instruction)
-            messages = [{'role': 'user', 'content': construct_verifier_prompt(instruction)}]
-            prompt = tokenizer.apply_chat_template(
-                messages,
-                add_generation_prompt=True,
-                tokenize=False
-            )
+    with open(args.output, 'w') as output_file:
+        for instruction in instructions:
+            verification_strs = []
+            testcase_strs = []
+            for _ in range(args.num_verifications):
+                messages = [{'role': 'user', 'content': construct_verifier_prompt(instruction)}]
+                prompt = tokenizer.apply_chat_template(
+                    messages,
+                    add_generation_prompt=True,
+                    tokenize=False
+                )
 
-            # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
-            fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
-            prompt += f'```\n{fn_prefix}'
-            completion = generate_completion(model, tokenizer, prompt, '```')
-            verified_completion = fn_prefix + completion
-            print(verified_completion)
+                # TODO: leverage structured decoding to avoid generations with basic syntactic errors.
+                fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
+                prompt += f'```\n{fn_prefix}'
+                completion = generate_completion(model, tokenizer, prompt, '```')
+                verified_completion = fn_prefix + completion
 
-            messages.append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
-            messages.append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
+                messages.append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
+                messages.append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
 
-            prompt_2 = tokenizer.apply_chat_template(
-                messages,
-                add_generation_prompt=True,
-                tokenize=False
-            )
-            testcase_prefix = '{"response": "'
-            prompt_2 += f'```\n{testcase_prefix}'
-            completion = generate_completion(model, tokenizer, prompt_2, tokenizer.eos_token)
-            testcase_completion = testcase_prefix + completion
-            print(testcase_completion)
-        print('------------')
+                prompt_2 = tokenizer.apply_chat_template(
+                    messages,
+                    add_generation_prompt=True,
+                    tokenize=False
+                )
+                testcase_prefix = '{"response": "'
+                prompt_2 += f'```\n{testcase_prefix}'
+                completion = generate_completion(model, tokenizer, prompt_2, tokenizer.eos_token)
+                testcase_completion = testcase_prefix + completion
+                
+                verification_strs.append(verified_completion)
+                testcase_strs.append(testcase_completion)
+        
+        obj = {
+            'instruction': instruction,
+            'verifiers': verification_strs,
+            'testcases': testcase_strs
+        }
+        output_file.write(json.dumps(obj))
+        output_file.write('\n')
 
