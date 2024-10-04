@@ -72,6 +72,7 @@ if __name__ == '__main__':
 
     generated_instructions = []
     start_ts = time.time()
+    print(tokenizer.decode([tokenizer.eos_token_id]))
     while len(generated_instructions) < args.limit:
         outputs = model.generate(
             **batch,
