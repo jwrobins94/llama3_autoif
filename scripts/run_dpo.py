@@ -22,6 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
+    parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
     parser.add_argument(f'--lr', type=float, default=1e-5, help='Peak learning rate')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     trainer = lightning.Trainer(
         accelerator='auto',
         devices='auto',
-        max_epochs=1, # TODO
+        max_epochs=args.epochs,
         accumulate_grad_batches=1, # TODO
         precision='bf16-mixed', # TODO
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
