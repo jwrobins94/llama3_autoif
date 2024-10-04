@@ -59,7 +59,8 @@ class DPOLightningModel(lightning.LightningModule):
 
         logits = model(input_ids = input_ids,
                         attention_mask = attention_mask,
-                        use_cache=False).logits[:, :-1]
+                        use_cache=False).logits[:, :-1, :]
+        # logits has shape [batch, seq - 1, vocab_size]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
         
         print(self.tokenizer.batch_decode(input_ids))
