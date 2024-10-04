@@ -65,7 +65,7 @@ Here are 3 example test cases for the instruction: use the letter B between 2 an
 {{"response": "Babbel is a popular app used to learn languages and is suitable for beginners. However, it does not yet support the Bemba language.", "result": false}}
 {{"response": "I recommend that you bring at least $200 in cash for your trip to Bulgaria, as many companies will not accept credit cards.", "result": true}}
 
-Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
+Now, write 3 test cases (one per line) for your instruction: {instruction}'''
 
 
 if __name__ == '__main__':
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
             for i, completion in enumerate(completions):
                 messages_mat[i].append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
-                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
+                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction_w_query['instruction'])})
 
             prompts_2 = [
                 tokenizer.apply_chat_template(
