@@ -36,8 +36,8 @@ if __name__ == '__main__':
             for completion_idx, completion in enumerate(completions):
                 try:
                     ok = evaluate(completion) # evaluate is loaded dynamically via exec
+                    print(f'Function call completed: {ok}')
                 except:
-                    print('exception!')
                     ok = False
                 if ok:
                     num_passes[completion_idx] += 1
