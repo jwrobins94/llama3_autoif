@@ -14,6 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Context length')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
+    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
@@ -87,6 +88,14 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+
+    if args.deepspeed:
+        import deepspeed
+        ds_engine = deepspeed.init_inference(model,
+                                 dtype=torch.bfloat16,
+                                 checkpoint=None, # TODO load checkpoint from args
+                                 )
+        model = ds_engine.module
 
     if torch.cuda.is_available():
         model.to('cuda:0')
