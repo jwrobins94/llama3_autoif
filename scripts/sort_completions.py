@@ -51,7 +51,7 @@ if __name__ == '__main__':
             print(f'Pass rate: {pass_rate}')
             if pass_rate >= 0.5:
                 chosen.append(completion)
-            else:
+            elif pass_rate == 0:
                 rejected.append(completion)
         
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
