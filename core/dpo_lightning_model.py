@@ -34,7 +34,7 @@ class DPOLightningModel(lightning.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.get_grouped_params(),
                                             lr=self.learning_rate,
-                                            betas=(self.beta_1, self.beta_2))
+                                            betas=(0.9, 0.95)) # TODO extract to command line args
 
         # Calculate total training steps
         num_devices = self.trainer.num_devices
