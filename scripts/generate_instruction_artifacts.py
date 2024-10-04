@@ -4,6 +4,7 @@ import argparse
 import torch
 import json
 from transformers import StopStringCriteria, PreTrainedTokenizerFast
+from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         import deepspeed
         ds_engine = deepspeed.init_inference(model,
                                  dtype=torch.bfloat16,
-                                 replace_with_kernel_inject=True,
+                                 injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
                                  checkpoint=None, # TODO load checkpoint from args
                                  )
         model = ds_engine.module
