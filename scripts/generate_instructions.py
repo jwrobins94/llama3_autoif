@@ -71,7 +71,7 @@ if __name__ == '__main__':
             prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
         completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
         for completion in completions:
-            generated_instructions.extend(completion)
+            generated_instructions.append(completion)
         print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
     end_ts = time.time()
     print(f'Generated instructions in {end_ts - start_ts} seconds.')
