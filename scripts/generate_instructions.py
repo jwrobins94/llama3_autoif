@@ -6,7 +6,7 @@ import time
 from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
 from data.data_utils import load_sharegpt_queries
 import random
-
+import json
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -59,23 +59,26 @@ if __name__ == '__main__':
 
     queries = load_sharegpt_queries()
 
-    generated_instructions = []
     start_ts = time.time()
-    while len(generated_instructions) < args.limit:
-        prompts = [base_prompt]*args.batch_size
-        for i, prompt in enumerate(prompts):
-            query = queries[random.randint(0, len(queries) - 1)]
-            if '\n' in query:
-                query = query[:query.index('\n')]
-            prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
-        completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
-        for completion in completions:
-            generated_instructions.append(completion)
-        print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
+    with open(args.output, 'w') as f:
+        num_generated = 0
+        while num_generated < args.limit:
+            prompts = [base_prompt]*args.batch_size
+            sampled_queries = [queries[random.randint(0, len(queries) - 1)] for _ in range(len(prompts))]
+            for i, prompt in enumerate(prompts):
+                query = sampled_queries[i]
+                if '\n' in query:
+                    query = query[:query.index('\n')]
+                prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
+            completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
+            num_generated += len(completions)
+            for query, completion in zip(sampled_queries, completions):
+                f.write(json.dumps({
+                    'query': query,
+                    'instruction': completion
+                }))
+                f.write('\n')
+            print(f'Generated {num_generated} out of {args.limit} instructions.')
     end_ts = time.time()
     print(f'Generated instructions in {end_ts - start_ts} seconds.')
-
-    with open(args.output, 'w') as f:
-        # we write out all of the generated instructions here
-        # quality filtering happens later
-        f.write('\n'.join(generated_instructions))
+        
