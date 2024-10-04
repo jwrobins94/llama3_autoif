@@ -93,7 +93,6 @@ if __name__ == '__main__':
         import deepspeed
         ds_engine = deepspeed.init_inference(model,
                                  dtype=torch.bfloat16,
-                                 enable_cuda_graph=True,
                                  checkpoint=None, # TODO load checkpoint from args
                                  )
         model = ds_engine.module
