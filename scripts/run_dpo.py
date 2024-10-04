@@ -11,6 +11,15 @@ import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
 
+import logging
+
+# configure logging at the root level of Lightning
+logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
+
+# configure logging on module level, redirect to file
+logger = logging.getLogger("lightning.pytorch.core")
+logger.addHandler(logging.FileHandler("core.log"))
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
