@@ -32,10 +32,14 @@ You will be provided with a single instruction.
 Your task is to write a Python function named 'evaluate' to evaluate whether an input string 'response'
 follows this instruction. If it follows, simply return True, otherwise return False.
 
-Here is an example of a good output for the instruction: use the letter B at least once
+Here is an example of a good output for the instruction: use the letter B between 2 and 5 times
 ```
 def evaluate(response: str) -> bool:
-    return 'B' in response
+    count = 0
+    for char in response:
+        if char.upper() == 'B':
+            count += 1
+    return 2 <= count <= 5
 ```
 
 Here is an example of a good output for the instruction: answer in at most 27 characters
@@ -52,10 +56,10 @@ def construct_test_case_prompt(instruction: str) -> str:
 Write one test case per line in JSON format:
 {{"response": "some response", "result": true or false}}
 
-Here are 3 example test cases for the instruction: use the letter B at least once
-{{"response": "Bar", "result": true}}
-{{"response": "Foo", "result": false}}
-{{"response": "CAB", "result": true}}
+Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
+{{"response": "That's a great idea! You can buy a bar of soap at the local pharmacy.", "result": true}}
+{{"response": "Babbel is a popular app used to learn languages and is suitable for beginners. However, it does not yet support the Bemba language.", "result": false}}
+{{"response": "I recommend that you bring at least $200 in cash for your trip to Bulgaria, as many companies will not accept credit cards.", "result": true}}
 
 Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
 
