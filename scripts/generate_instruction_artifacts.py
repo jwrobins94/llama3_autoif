@@ -21,21 +21,25 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def construct_verifier_prompt(instruction: str) -> str:
+def construct_verifier_prompt(query: str, instruction: str) -> str:
     # this prompt is derived from the one in the paper
     # however, with the LLama 8B models I had more success when breaking up the task into instructions, then verifications
     return f'''
 You are an expert at writing evaluation functions in Python to evaluate whether a response
 strictly follows an instruction.
 
-You will be provided with a single instruction.
-Your task is to write a Python function named 'evaluate' to evaluate whether an input string 'response'
+You will be provided with a user query and a corresponding instruction.
+Your task is to write a Python function named 'evaluate' to evaluate whether a response to this query 'response'
 follows this instruction. If it follows, simply return True, otherwise return False.
 
-Here is an example of a good output for the instruction: use the letter B at least once
+Here is an example of a good output for the instruction: use the letter B between 2 and 5 times
 ```
 def evaluate(response: str) -> bool:
-    return 'B' in response
+    count = 0
+    for char in response:
+        if char.upper() == 'B':
+            count += 1
+    return 2 <= count <= 5
 ```
 
 Here is an example of a good output for the instruction: answer in at most 27 characters
@@ -44,27 +48,31 @@ def evaluate(response: str) -> bool:
     return len(response) <= 27
 ```
 
-Now, please write the evaluate function for the following instruction: {instruction}'''
+The user will issue the following query: {query}
+Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}'''
 
 
 def construct_test_case_prompt(instruction: str) -> str:
+    # A common failure mode I've noticed is that the test cases will be overly simple.
+    # As a result, we will have poor screening of verification functions and our actual model generations
+    # will have a 100% pass or fail rate.
     return f'''Now write 3 test cases for this verification function.
 Write one test case per line in JSON format:
 {{"response": "some response", "result": true or false}}
 
-Here are 3 example test cases for the instruction: use the letter B at least once
-{{"response": "Bar", "result": true}}
-{{"response": "Foo", "result": false}}
-{{"response": "CAB", "result": true}}
+Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
+{{"response": "That's a great idea! You can buy a bar of soap at the local pharmacy.", "result": true}}
+{{"response": "Babbel is a popular app used to learn languages and is suitable for beginners. However, it does not yet support the Bemba language.", "result": false}}
+{{"response": "I recommend that you bring at least $200 in cash for your trip to Bulgaria, as many companies will not accept credit cards.", "result": true}}
 
-Now, write 3 test cases (one per line) for the following instruction: {instruction}'''
+Now, write 3 test cases (one per line) for your instruction: {instruction}'''
 
 
 if __name__ == '__main__':
     args = parse_args()
 
     with open(args.input) as f:
-        instructions = f.read().splitlines()
+        instructions_w_queries = [json.loads(line) for line in f.read().splitlines()]
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
@@ -76,9 +84,9 @@ if __name__ == '__main__':
         model.to('cuda:0')
 
     with open(args.output, 'w') as output_file:
-        for instruction_idx, instruction in enumerate(instructions):
-            print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
-            messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(instruction)}] for _ in range(args.num_verifications)]
+        for instruction_idx, instruction_w_query in enumerate(instructions_w_queries):
+            print(f'Processing instruction {instruction_idx + 1} of {len(instructions_w_queries)}.')
+            messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(**instruction_w_query)}] for _ in range(args.num_verifications)]
             prompts = [
                     tokenizer.apply_chat_template(
                     messages,
@@ -96,7 +104,7 @@ if __name__ == '__main__':
 
             for i, completion in enumerate(completions):
                 messages_mat[i].append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
-                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
+                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction_w_query['instruction'])})
 
             prompts_2 = [
                 tokenizer.apply_chat_template(
@@ -113,7 +121,8 @@ if __name__ == '__main__':
             testcase_completions = [testcase_prefix + completion for completion in completions]
         
             obj = {
-                'instruction': instruction,
+                'query': instruction_w_query['query'],
+                'instruction': instruction_w_query['instruction'],
                 'verifiers': verified_completions,
                 'testcases': testcase_completions
             }

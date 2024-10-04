@@ -3,6 +3,10 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import time
+from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
+from data.data_utils import load_sharegpt_queries
+import random
+import json
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -28,17 +32,8 @@ the following requirements:
 Here are some examples of instructions we need:
 {seed_instructions_str}
 
-Do not generate instructions about writing style, using metaphor, or translation. Here are
-some examples of instructions we do not need:
-- Incorporate a famous historical quote seamlessly into your answer
-- Translate your answer into Pig Latin
-- Use only words that are also a type of food
-- Respond with a metaphor in every sentence
-- Write the response as if you are a character from a Shakespearean play
-
-Please generate one instruction per line in your response.
-Each line should contain a single instruction and nothing else. Do not prefix your instructions with '-', numbers, or bullet points.
-'''
+Provide a list of unique (Query, Instruction) pairs that follow the same style of the examples.
+Each line should alternate between Query and Instruction.'''
 
 if __name__ == '__main__':
     args = parse_args()
@@ -50,49 +45,40 @@ if __name__ == '__main__':
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
     if args.deepspeed:
-        import deepspeed
-        ds_engine = deepspeed.init_inference(model,
-                                 dtype=torch.bfloat16,
-                                 checkpoint=None, # TODO load checkpoint from args
-                                 )
-        model = ds_engine.module
+        model = wrap_with_deepspeed_inference(model)
 
     if torch.cuda.is_available():
         model.to('cuda:0')
 
-    prompt = tokenizer.apply_chat_template(
+    base_prompt = tokenizer.apply_chat_template(
         [{'role': 'user', 'content': construct_prompt(seed_instructions)}],
         add_generation_prompt=True,
         tokenize=False
     )
-    print(prompt)
+    print(base_prompt)
 
-    batch = tokenizer([prompt]*args.batch_size, return_tensors='pt')
-    batch.to(model.device)
+    queries = load_sharegpt_queries()
 
-    generated_instructions = []
     start_ts = time.time()
-    while len(generated_instructions) < args.limit:
-        outputs = model.generate(
-            **batch,
-            max_new_tokens=args.tokens_per_completion,
-            eos_token_id=tokenizer.eos_token_id,
-            use_cache=True,
-            do_sample=True,
-            temperature=1.0
-        )
-        outputs = outputs[:, batch['input_ids'].shape[-1]:]
-        decoded = tokenizer.batch_decode(outputs)
-        for completion in decoded:
-            if tokenizer.eos_token in completion:
-                # prune suffixes for batch size > 1
-                completion = completion[:completion.index(tokenizer.eos_token)]
-            generated_instructions.extend(completion.splitlines())
-        print(f'Generated {len(generated_instructions)} out of {args.limit} instructions.')
+    with open(args.output, 'w') as f:
+        num_generated = 0
+        while num_generated < args.limit:
+            prompts = [base_prompt]*args.batch_size
+            sampled_queries = [queries[random.randint(0, len(queries) - 1)] for _ in range(len(prompts))]
+            for i, prompt in enumerate(prompts):
+                query = sampled_queries[i]
+                if '\n' in query:
+                    query = query[:query.index('\n')]
+                prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
+            completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
+            num_generated += len(completions)
+            for query, completion in zip(sampled_queries, completions):
+                f.write(json.dumps({
+                    'query': query,
+                    'instruction': completion
+                }))
+                f.write('\n')
+            print(f'Generated {num_generated} out of {args.limit} instructions.')
     end_ts = time.time()
     print(f'Generated instructions in {end_ts - start_ts} seconds.')
-
-    with open(args.output, 'w') as f:
-        # we write out all of the generated instructions here
-        # quality filtering happens later
-        f.write('\n'.join(generated_instructions))
+        

@@ -1,0 +1,12 @@
+Query: Summarize the main ideas of Jeff Walker's Product Launch Formula into bullet points as it pertains to a growth marketing agency implementing these strategies and tactics for their clients...
+Instruction: Use only words with double letters (e.g., "bookkeeper")
+Query: How to tell if a customer segment is well segmented?
+Instruction: In 3 bullet points.
+Query: In Java, I want to replace string like "This is a new {object} at {place}" with a Map, {object: "student", "point 3, 4"}, and get a result "This is a new student at point 3, 4". How can I do?
+Instruction: Use no adjectives or adverbs
+Query: how could i implement a minesweeper algorithm that utilises algebraic topology to solve boards?
+Instruction: Write the response in Morse code
+Query: Give me comparison of running activities. Models are Garmin Fenix 5 and Apple watch 4.
+Instruction: Answer with a single sentence that is exactly 100 words long
+Query: What is a formal but simplified explanation of Web marketing
+Instruction: Use only the first half of the alphabet (A-M)

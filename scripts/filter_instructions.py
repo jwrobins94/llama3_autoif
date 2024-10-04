@@ -50,7 +50,7 @@ def passes(verifier_fn: Callable[[str], bool], input_str: str, result: bool) -> 
         return False
 
 
-def passes_validation(instruction: str, verifiers: list[str], testcases: list[str]) -> tuple[dict[str, object], bool]:
+def passes_validation(query: str, instruction: str, verifiers: list[str], testcases: list[str]) -> tuple[dict[str, object], bool]:
     # First filter the verifiers to those that compile; # TODO is that how the paper does it?
     filtered_verifiers = []
     verifier_functions = []
@@ -105,7 +105,9 @@ def passes_validation(instruction: str, verifiers: list[str], testcases: list[st
 
     # TODO note!!! Verifiers and test cases have been parsed in the returned object
     return {
+        'query': query,
         'instruction': instruction,
+        'test_cases': test_cases,
         'verifiers': verifiers,
     }, True
         
