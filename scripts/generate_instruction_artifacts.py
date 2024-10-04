@@ -91,7 +91,8 @@ if __name__ == '__main__':
         model.to('cuda:0')
 
     with open(args.output, 'w') as output_file:
-        for instruction in instructions:
+        for instruction_idx, instruction in enumerate(instructions):
+            print(f'Processing instruction {instruction_idx + 1} of {len(instructions)}.')
             verification_strs = []
             testcase_strs = []
             for _ in range(args.num_verifications):
