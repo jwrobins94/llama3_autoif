@@ -26,6 +26,7 @@ if __name__ == '__main__':
     for instance in instances:
         # load completions
         completions = instance['completions']
+        print(completions)
 
         num_passes = [0] * len(completions)
 
