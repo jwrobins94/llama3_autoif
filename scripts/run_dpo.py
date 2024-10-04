@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
+from lightning.pytorch.loggers import WandbLogger
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -191,7 +192,7 @@ if __name__ == '__main__':
         accumulate_grad_batches=1, # TODO
         precision='bf16-mixed', # TODO
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
-        logger=lightning.pytorch.loggers.CSVLogger('/tmp', flush_logs_every_n_steps=1)
+        logger=WandbLogger()
     )
 
     trainer.fit(model=lightning_model, train_dataloaders=dataloader)
