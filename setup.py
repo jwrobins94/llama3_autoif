@@ -10,6 +10,7 @@ setup(
         'lm_eval',
         'langdetect',
         'immutabledict',
-        'deepspeed'
+        'deepspeed',
+        'flash_attn'
     ]
 )
