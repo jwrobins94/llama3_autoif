@@ -86,6 +86,8 @@ if __name__ == '__main__':
             use_cache=True,
             do_sample=True,
             temperature=1.0,
+            top_p=0.9,
+            top_k=3,
             stopping_criteria=[StopStringCriteria(tokenizer, ['```'])]
         )
         outputs = outputs[:, batch['input_ids'].shape[-1]:]
