@@ -1,3 +1,5 @@
+import lightning.pytorch
+import lightning.pytorch.loggers
 from core.model import load_model
 from core.tokenizer import load_tokenizer
 from core.dpo_lightning_model import DPOLightningModel
@@ -10,15 +12,6 @@ from dataclasses import dataclass
 import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
-
-import logging
-
-# configure logging at the root level of Lightning
-logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
-
-# configure logging on module level, redirect to file
-logger = logging.getLogger("lightning.pytorch.core")
-logger.addHandler(logging.FileHandler("core.log"))
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -197,7 +190,8 @@ if __name__ == '__main__':
         max_epochs=1, # TODO
         accumulate_grad_batches=1, # TODO
         precision='bf16-mixed', # TODO
-        strategy='deepspeed_stage_2' if args.deepspeed else 'auto'
+        strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
+        logger=lightning.pytorch.loggers.CSVLogger('/tmp', flush_logs_every_n_steps=1)
     )
 
     trainer.fit(model=lightning_model, train_dataloaders=dataloader)
