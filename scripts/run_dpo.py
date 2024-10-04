@@ -1,12 +1,15 @@
 from core.model import load_model
 from core.tokenizer import load_tokenizer
+from core.dpo_lightning_model import DPOLightningModel
 import argparse
-import torch
 import json
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizerFast
 from typing import Optional
 from dataclasses import dataclass
+import lightning
+import torch
+from lightning.pytorch.utilities.rank_zero import rank_zero_only
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -16,6 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
+    parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of sort_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
@@ -166,8 +170,25 @@ if __name__ == '__main__':
         print(batch)
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    # load the model a second time as our reference policy for the KL penalty
+    ref_model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
-    if torch.cuda.is_available():
-        model.to('cuda:0')
+    lightning_model = DPOLightningModel(model, ref_model, args.kl_beta)
+
+    trainer = lightning.Trainer(
+        accelerator='auto',
+        devices='auto',
+        max_epochs=1, # TODO
+        accumulate_grad_batches=1, # TODO
+        precision='bf16-mixed', # TODO
+        strategy='deepspeed_stage_2' if args.deepspeed else 'auto'
+    )
+
+    trainer.fit(model=lightning_model, train_dataloaders=dataloader)
+
+    @rank_zero_only
+    def save(model):
+        torch.save(model.state_dict(), args.output)
+    save(model)
 
     
