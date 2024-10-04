@@ -146,7 +146,7 @@ def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str
 
             rows_tokenized.append(row_tokenized)
 
-    collator = RewardDataCollatorWithPadding()
+    collator = RewardDataCollatorWithPadding(tokenizer)
     train_dataloader = DataLoader(rows_tokenized, batch_size=batch_size, shuffle=True, collate_fn=collator)
     print(f'Number of batches: {len(train_dataloader)}')
 
