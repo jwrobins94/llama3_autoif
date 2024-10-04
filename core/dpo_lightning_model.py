@@ -39,9 +39,9 @@ class DPOLightningModel(lightning.LightningModule):
         # Calculate total training steps
         num_devices = self.trainer.num_devices
         scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[
-            torch.optim.lr_scheduler.LinearLR(optimizer, 1e-7 / self.learning_rate, 1.0, total_iters=self.warm_up),
-            torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, eta_min = 0.1 * self.learning_rate, T_max=self.num_train_steps // num_devices - self.warm_up)
-        ], milestones=[self.warm_up])
+            torch.optim.lr_scheduler.LinearLR(optimizer, 1e-7 / self.learning_rate, 1.0, total_iters=self.warm_up_steps),
+            torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, eta_min = 0.1 * self.learning_rate, T_max=self.num_train_steps // num_devices - self.warm_up_steps)
+        ], milestones=[self.warm_up_steps])
         return [optimizer], {'scheduler': scheduler, 'interval': 'step', 'frequency': 1}
     
     def log_learning_rate(self):
