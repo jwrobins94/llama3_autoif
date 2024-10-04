@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
         # process each verifier
         verifier_functions = []
-        for verifier in instance['verifiers']:
+        for function_str in instance['verifiers']:
             exec(function_str, globals())
             for completion_idx, completion in enumerate(completions):
                 try:
