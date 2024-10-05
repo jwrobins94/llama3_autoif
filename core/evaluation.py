@@ -12,7 +12,7 @@ def run_ifeval(model_name: str,
                context_length: int,
                hf_api_token: str,
                limit: Optional[int] = None,
-               state_dict: Optional[dict[str, object]] = None) -> tuple[dict[str, object], list[object]]:
+               state_dict: Optional[dict[str, object]] = None) -> tuple[dict[str, object] | None, list[object] | None]:
     # this download is needed for ifeval to run
     nltk.download('punkt_tab')
 
@@ -34,6 +34,9 @@ def run_ifeval(model_name: str,
         batch_size=batch_size,
         apply_chat_template=True
     )
+    if not result['results']:
+        # rank > 0
+        return None, None 
     scores = result['results']['ifeval']
     samples = result['samples']['ifeval']
 
