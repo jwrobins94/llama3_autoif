@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == '__main__':
     args = parse_args()
+    print('Consider running with "accelerate launch scripts/evaluate_model.py ..." if you have multiple GPUs.')
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
