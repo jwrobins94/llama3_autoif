@@ -41,15 +41,20 @@ class DPOLightningModel(lightning.LightningModule):
         lr = optimizer.param_groups[0]['lr']
         self.log('lr', lr, on_step=True, logger=True, prog_bar=True, rank_zero_only=True)
 
-    def _compute_logprobs(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module) -> torch.Tensor:
+    def _compute_logprob_sum(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module, completion_lengths: torch.Tensor) -> torch.Tensor:
+        batch_size = input_ids.shape[0]
         targets = input_ids[:, 1:].unsqueeze(-1)
 
         logits = model(input_ids = input_ids,
                         attention_mask = attention_mask,
-                        use_cache=False).logits[:, :-1, :]
-        # logits has shape [batch, seq - 1, vocab_size]
+                        use_cache=False).logits[:, :-1]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
-        return logprobs
+
+        per_row_sums = []
+        for i, completion_length in enumerate(completion_lengths):
+            per_row_sums.append(torch.sum(logprobs[i, -completion_length:]))
+        res = torch.stack(per_row_sums)
+        return res
 
     def training_step(self, batch, batch_idx):
         self.ref_model.eval()
