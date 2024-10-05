@@ -72,24 +72,16 @@ class DPOLightningModel(lightning.LightningModule):
             completion_lengths_chosen = seq_lengths_chosen - context_lengths
             completion_lengths_rejected = seq_lengths_rejected - context_lengths
             
-            print()
-            print('ref-chosen')
             ref_logprobs_chosen = self._compute_logprobs(batch["input_ids_chosen"],
                                                        batch["attention_mask_chosen"],
                                                        self.ref_model)
-            print()
-            print('ref-rejected')
             ref_logprobs_rejected = self._compute_logprobs(batch["input_ids_rejected"],
                                                        batch["attention_mask_rejected"],
                                                        self.ref_model)
         
-        print()
-        print('pi-chosen')
         pi_logprobs_chosen = self._compute_logprobs(batch["input_ids_chosen"],
                                                     batch["attention_mask_chosen"],
                                                     self.model)
-        print()
-        print('pi-rejected')
         pi_logprobs_rejected = self._compute_logprobs(batch["input_ids_rejected"],
                                                     batch["attention_mask_rejected"],
                                                     self.model)
@@ -100,11 +92,12 @@ class DPOLightningModel(lightning.LightningModule):
         batch_size = batch["input_ids_chosen"].shape[0]
         losses = torch.zeros([batch_size], device=batch["input_ids_chosen"].device)
         for i in range(batch_size):
+            print('chosen delta')
             chosen_delta_i = chosen_delta[i, -completion_lengths_chosen[i]:]
             for token, delta in zip(batch["input_ids_chosen"][i, -completion_lengths_chosen[i]:], chosen_delta_i):
                 print(self.tokenizer.decode(token), delta.item())
         
-            
+            print('rejected delta')
             rejected_delta_i = rejected_delta[i, -completion_lengths_rejected[i]:]
             for token, delta in zip(batch["input_ids_rejected"][i, -completion_lengths_rejected[i]:], rejected_delta_i):
                 print(self.tokenizer.decode(token), delta.item())
