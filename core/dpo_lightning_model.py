@@ -89,6 +89,8 @@ class DPOLightningModel(lightning.LightningModule):
         chosen_delta = pi_logprobs_chosen - ref_logprobs_chosen
         rejected_delta = pi_logprobs_rejected - ref_logprobs_rejected
 
+        print(self.tokenizer.batch_decode(batch["input_ids_context"]))
+
         batch_size = batch["input_ids_chosen"].shape[0]
         losses = torch.zeros([batch_size], device=batch["input_ids_chosen"].device)
         for i in range(batch_size):
