@@ -19,7 +19,8 @@ def run_ifeval(model_name: str,
             pretrained=model_name,
             tokenizer=tokenizer,
             batch_size=batch_size,
-            parallelize=True
+            parallelize=True,
+            state_dict=state_dict
         ),
         tasks=['ifeval'],
         cache_requests=True,
@@ -27,8 +28,7 @@ def run_ifeval(model_name: str,
         limit=limit,
         num_fewshot=0,
         batch_size=batch_size,
-        apply_chat_template=True,
-        state_dict=state_dict
+        apply_chat_template=True
     )
     scores = result['results']['ifeval']
     samples = result['samples']['ifeval']
