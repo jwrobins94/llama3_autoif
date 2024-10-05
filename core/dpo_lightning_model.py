@@ -24,7 +24,7 @@ class DPOLightningModel(lightning.LightningModule):
         self.tokenizer = tokenizer
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW({"params": list(self.model.parameters()), "weight_decay": 0.0},
+        optimizer = torch.optim.AdamW(self.model.parameters(),
                                       lr=self.learning_rate,
                                       betas=(0.9, 0.95)) # TODO extract to command line args
 
