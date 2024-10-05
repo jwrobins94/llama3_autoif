@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
     parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
-    parser.add_argument(f'--lr', type=float, default=1e-5, help='Peak learning rate')
+    parser.add_argument(f'--lr', type=float, default=5e-6, help='Peak learning rate')
     parser.add_argument(f'--beta1', type=float, default=0.9, help='AdamW beta1')
     parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
