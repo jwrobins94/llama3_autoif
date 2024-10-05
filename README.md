@@ -1,2 +1,2 @@
-# self_play_ifeval
-Minimal implementation of the paper "Self-play with Execution Feedback" using Llama models
+# LLama3-AutoIF
+Minimal implementation of the paper "Self-play with Execution Feedback" using Llama 3 models.
