@@ -89,11 +89,8 @@ if __name__ == '__main__':
 
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
         instruction_idx = 0
-        for batch in dataloader:
+        for instruction_w_query in dataloader:
             instruction_idx += 1
-            print(batch)
-            assert len(batch) == 1
-            instruction_w_query = batch[0]
 
             print(f'[{args.local_rank}] Processing instruction {instruction_idx}.')
             messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(**instruction_w_query)}] for _ in range(args.num_verifications)]
