@@ -88,69 +88,16 @@ class DPOLightningModel(lightning.LightningModule):
         
         chosen_delta = pi_logprobs_chosen - ref_logprobs_chosen
         rejected_delta = pi_logprobs_rejected - ref_logprobs_rejected
-
-        #print(self.tokenizer.batch_decode(batch["input_ids_context"]))
-
         batch_size = batch["input_ids_chosen"].shape[0]
         losses = torch.zeros([batch_size], device=batch["input_ids_chosen"].device)
         for i in range(batch_size):
-            #print('--------------chosen delta')
             chosen_delta_i = chosen_delta[i, -completion_lengths_chosen[i]:]
-            #for token, delta in zip(batch["input_ids_chosen"][i, -completion_lengths_chosen[i]:], chosen_delta_i):
-            #    print(self.tokenizer.decode(token), delta.item())
-        
-            #print('--------------rejected delta')
             rejected_delta_i = rejected_delta[i, -completion_lengths_rejected[i]:]
-            #for token, delta in zip(batch["input_ids_rejected"][i, -completion_lengths_rejected[i]:], rejected_delta_i):
-            #    print(self.tokenizer.decode(token), delta.item())
-
             logprob_ratio_delta = torch.sum(chosen_delta_i) - torch.sum(rejected_delta_i)
             losses[i] = -torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta)
-
-        #print(losses)
-        #print(f'batch size is {batch_size}')
         loss = torch.mean(losses)
 
-        # Include an additional loss on the chosen sequence, as in the Meta paper
-        #for i in range(batch_size):
-        #    loss = loss - torch.sum(pi_logprobs_chosen[i, -completion_lengths_chosen[i]:]) / batch_size
-
         return loss
-    
-    @torch.no_grad()
-    def log_metrics(self,
-                    pi_lps_chosen: torch.Tensor,
-                    ref_lps_chosen: torch.Tensor,
-                    pi_lps_rejected: torch.Tensor,
-                    ref_lps_rejected: torch.Tensor) -> None:
-        self.log('pi_lps_chosen', torch.mean(pi_lps_chosen), on_step=True, sync_dist=True, logger=True, prog_bar=True)
-        self.log('ref_lps_chosen', torch.mean(ref_lps_chosen), on_step=True, sync_dist=True, logger=True, prog_bar=True)
-        self.log('pi_lps_rejected', torch.mean(pi_lps_rejected), on_step=True, sync_dist=True, logger=True, prog_bar=True)
-        self.log('ref_lps_rejected', torch.mean(ref_lps_rejected), on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        pi_margin = torch.mean(pi_lps_chosen - pi_lps_rejected)
-        self.log('pi_margin', pi_margin, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        ref_margin = torch.mean(ref_lps_chosen - ref_lps_rejected)
-        self.log('ref_margin', ref_margin, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        margin_delta = pi_margin - ref_margin
-        self.log('margin_delta', margin_delta, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        chosen_delta = torch.mean(pi_lps_chosen - ref_lps_chosen)
-        self.log('chosen_delta', chosen_delta, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        rej_delta = torch.mean(pi_lps_rejected - ref_lps_rejected)
-        self.log('rej_delta', rej_delta, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        pi_accuracy = float(torch.mean((pi_lps_chosen - pi_lps_rejected > 0).float()).cpu().numpy())
-        self.log('pi_accuracy', pi_accuracy, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        ref_accuracy = float(torch.mean((ref_lps_chosen - ref_lps_rejected > 0).float()).cpu().numpy())
-        self.log('ref_accuracy', ref_accuracy, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-
-        dpo_accuracy = float(torch.mean(((pi_lps_chosen - ref_lps_chosen) - (pi_lps_rejected - ref_lps_rejected) > 0).float()).cpu().numpy())
-        self.log('dpo_accuracy', dpo_accuracy, on_step=True, sync_dist=True, logger=True, prog_bar=True)
 
     def training_step(self, batch, batch_idx):
         loss = self.compute_loss(batch)

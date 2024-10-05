@@ -188,7 +188,6 @@ if __name__ == '__main__':
     )
 
     logger = WandbLogger()
-    #logger.watch(model, log="gradients", log_freq=1)
 
     trainer = lightning.Trainer(
         accelerator='auto',
@@ -208,5 +207,3 @@ if __name__ == '__main__':
     def save(model):
         torch.save(model.state_dict(), args.output)
     save(model)
-
-    

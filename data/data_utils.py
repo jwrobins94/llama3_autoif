@@ -17,7 +17,7 @@ def load_sharegpt_queries() -> list[str]:
         extract_query,
         batched=False,
         remove_columns=data_train.column_names,
-        #load_from_cache_file=False # the cache creates a lot of problems when debugging
+        load_from_cache_file=False # the cache creates a lot of problems when debugging
     ).filter(lambda row : 5 <= len(row['query']) <= 200)
 
     res = []
