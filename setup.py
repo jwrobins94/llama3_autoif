@@ -12,6 +12,7 @@ setup(
         'immutabledict',
         'deepspeed',
         'lightning',
-        'wandb'
+        'wandb',
+        'accelerate'
     ]
 )
