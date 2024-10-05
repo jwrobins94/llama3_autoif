@@ -82,7 +82,7 @@ if __name__ == '__main__':
             prompts = batch['prompt']
             num_generated += len(prompts)
             sampled_queries = batch['query']
-            completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
+            completions = generate_completions(model, tokenizer, prompts, ['\n', tokenizer.eos_token], args.tokens_per_completion)
             for query, completion in zip(sampled_queries, completions):
                 f.write(json.dumps({
                     'query': query,
