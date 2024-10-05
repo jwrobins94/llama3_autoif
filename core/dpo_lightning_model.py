@@ -90,14 +90,14 @@ class DPOLightningModel(lightning.LightningModule):
                                                        self.ref_model,
                                                        completion_lengths_rejected)
         
-        pi_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
-                                                    batch["attention_mask_chosen"],
-                                                    self.model,
-                                                    completion_lengths_chosen)
-        pi_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
-                                                    batch["attention_mask_rejected"],
-                                                    self.model,
-                                                    completion_lengths_rejected)
+            pi_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
+                                                        batch["attention_mask_chosen"],
+                                                        self.model,
+                                                        completion_lengths_chosen)
+            pi_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
+                                                        batch["attention_mask_rejected"],
+                                                        self.model,
+                                                        completion_lengths_rejected)
         
 
         logprob_ratio_delta = (pi_lps_chosen - pi_lps_rejected) - (ref_lps_chosen - ref_lps_rejected)
