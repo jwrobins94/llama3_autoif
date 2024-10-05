@@ -21,11 +21,12 @@ def run_ifeval(model_name: str,
             tokenizer=tokenizer,
             batch_size=batch_size,
             dtype=torch.bfloat16,
-            #state_dict=state_dict,
             token=hf_api_token,
             max_length=context_length
         )
     if state_dict:
+        # reload weights from the state_dict
+        # TODO: debug why weights are not properly loaded when passing state_dict=state_dict directly to HFLM(...)
         model.model.load_state_dict(state_dict)
     result = simple_evaluate(
         model=model,
