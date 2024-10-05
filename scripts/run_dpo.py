@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
+    parser.add_argument(f'--strategy', type=str, default='deepspeed_stage_2', help='Distributed training strategy')
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
     parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     trainer = lightning.Trainer(
         max_epochs=args.epochs,
         precision='bf16', # hardcode to bf16 since the model itself is loaded in bf16
-        strategy='deepspeed_stage_2' if args.deepspeed else 'auto', # TODO
+        strategy=args.strategy,
         logger=logger,
         log_every_n_steps=1,
         enable_checkpointing=False
