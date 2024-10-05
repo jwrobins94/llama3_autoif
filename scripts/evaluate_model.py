@@ -1,11 +1,10 @@
 import lm_eval.api # TODO: for unknown reasons, this import must happen before other modules are loaded
 
-from core.model import load_model
+from core.model import load_state_dict
 from core.tokenizer import load_tokenizer
 from core.evaluation import run_ifeval
 import argparse
 import json
-import torch
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to run IFEval on a trained model')
@@ -24,12 +23,16 @@ if __name__ == '__main__':
     args = parse_args()
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
+    #model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
-    if torch.cuda.is_available():
-        model.to('cuda:0')
+    #if torch.cuda.is_available():
+    #    model.to('cuda:0')
 
-    scores, samples = run_ifeval(model, tokenizer, args.batch_size, args.limit or None)
+    if args.ckpt:
+        state_dict = load_state_dict(args.ckpt)
+    else:
+        state_dict = None
+    scores, samples = run_ifeval(args.model, tokenizer, args.batch_size, args.limit or None, state_dict)
     print(scores)
 
     if args.output:
