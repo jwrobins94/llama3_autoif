@@ -53,8 +53,7 @@ class DPOLightningModel(lightning.LightningModule):
         lr = optimizer.param_groups[0]['lr']
         self.log('lr', lr, on_step=True, logger=True, prog_bar=True, rank_zero_only=True)
 
-    def _compute_logprob_sum(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module, completion_lengths: torch.Tensor) -> torch.Tensor:
-        batch_size = input_ids.shape[0]
+    def _compute_logprobs(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module) -> torch.Tensor:
         targets = input_ids[:, 1:].unsqueeze(-1)
 
         logits = model(input_ids = input_ids,
@@ -62,15 +61,7 @@ class DPOLightningModel(lightning.LightningModule):
                         use_cache=False).logits[:, :-1, :]
         # logits has shape [batch, seq - 1, vocab_size]
         logprobs = torch.log_softmax(logits, dim=-1).gather(2, targets).squeeze(-1)
-
-        res = torch.zeros([batch_size], device=input_ids.device)
-        for i, completion_length in enumerate(completion_lengths):
-            completion_ids = input_ids[i, -completion_length:]
-            min_idx = torch.argmin(logprobs[i, -completion_length:])
-            print(f'"{self.tokenizer.decode(completion_ids[min_idx])}"')
-            print(torch.exp(logprobs[i, -completion_length:])[min_idx])
-            res[i] = torch.sum(logprobs[i, -completion_length:])
-        return res
+        return logprobs
 
     def compute_loss(self, batch) -> torch.Tensor:
         self.ref_model.eval()
@@ -83,35 +74,51 @@ class DPOLightningModel(lightning.LightningModule):
             
             print()
             print('ref-chosen')
-            ref_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
+            ref_logprobs_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
                                                        batch["attention_mask_chosen"],
-                                                       self.ref_model,
-                                                       completion_lengths_chosen)
+                                                       self.ref_model)
             print()
             print('ref-rejected')
-            ref_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
+            ref_logprobs_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
                                                        batch["attention_mask_rejected"],
-                                                       self.ref_model,
-                                                       completion_lengths_rejected)
+                                                       self.ref_model)
         
         print()
         print('pi-chosen')
-        pi_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
+        pi_logprobs_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
                                                     batch["attention_mask_chosen"],
-                                                    self.model,
-                                                    completion_lengths_chosen)
+                                                    self.model)
         print()
         print('pi-rejected')
-        pi_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
+        pi_logprobs_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
                                                     batch["attention_mask_rejected"],
-                                                    self.model,
-                                                    completion_lengths_rejected)
+                                                    self.model)
         
+        chosen_delta = pi_logprobs_chosen - ref_logprobs_chosen
+        rejected_delta = pi_logprobs_rejected - ref_logprobs_rejected
 
-        logprob_ratio_delta = (pi_lps_chosen - pi_lps_rejected) - (ref_lps_chosen - ref_lps_rejected)
-        loss = -torch.mean(torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta))
-        return loss, (pi_lps_chosen, ref_lps_chosen, pi_lps_rejected, ref_lps_rejected)
+        batch_size = batch["input_ids_chosen"].shape[0]
+        losses = torch.zeros([batch_size], device=batch["input_ids_chosen"].device)
+        for i in range(batch_size):
+            chosen_delta_i = chosen_delta[i, -completion_lengths_chosen[i]:]
+            print(list(zip(
+                self.tokenizer.decode(batch["input_ids_chosen"][i, -completion_lengths_chosen[i]:]),
+                chosen_delta_i
+            )))
+            
+            rejected_delta_i = rejected_delta[i, -completion_lengths_rejected[i]:]
+            print(list(zip(
+                self.tokenizer.decode(batch["input_ids_rejected"][i, -completion_lengths_rejected[i]:]),
+                rejected_delta_i
+            )))
 
+            logprob_ratio_delta = torch.sum(chosen_delta_i) - torch.sum(rejected_delta_i)
+            losses[i] = -torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta)
+
+        print(losses)
+        loss = torch.mean(losses)
+        return loss
+    
     @torch.no_grad()
     def log_metrics(self,
                     pi_lps_chosen: torch.Tensor,
@@ -148,9 +155,9 @@ class DPOLightningModel(lightning.LightningModule):
         self.log('dpo_accuracy', dpo_accuracy, on_step=True, sync_dist=True, logger=True, prog_bar=True)
 
     def training_step(self, batch, batch_idx):
-        loss, (pi_lps_chosen, ref_lps_chosen, pi_lps_rejected, ref_lps_rejected) = self.compute_loss(batch)
+        loss = self.compute_loss(batch)
         self.log('train_loss', loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
-        self.log_metrics(pi_lps_chosen, ref_lps_chosen, pi_lps_rejected, ref_lps_rejected)
+        #self.log_metrics(pi_lps_chosen, ref_lps_chosen, pi_lps_rejected, ref_lps_rejected)
 
         self.log_learning_rate()
         return loss
