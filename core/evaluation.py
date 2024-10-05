@@ -3,7 +3,6 @@ from lm_eval import simple_evaluate
 from lm_eval.models.huggingface import HFLM
 from transformers import PreTrainedTokenizerFast
 import nltk
-import pandas as pd
 from typing import Optional
 
 @torch.no_grad()

@@ -2,7 +2,7 @@ import lm_eval.api # for unknown reasons, this import must happen before other m
 
 from core.model import load_model
 from core.tokenizer import load_tokenizer
-from evaluation.ifeval import run_ifeval
+from core.evaluation import run_ifeval
 import argparse
 import json
 import torch
