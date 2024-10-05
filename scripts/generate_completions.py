@@ -49,7 +49,10 @@ if __name__ == '__main__':
     dataloader = DataLoader(all_instructions, batch_size=args.batch_size, sampler=sampler)
 
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
+        num_processed = 0
         for batch in dataloader:
+            num_processed += len(batch['query'])
+            print(f'[{args.local_rank}] Generating completions: {num_processed}')
             queries = batch['query']
             instructions = batch['instruction']
 
