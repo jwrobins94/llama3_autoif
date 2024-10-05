@@ -112,8 +112,8 @@ class DPOLightningModel(lightning.LightningModule):
         loss = torch.mean(losses)
 
         # Include an additional loss on the chosen sequence, as in the Meta paper
-        for i in range(batch_size):
-            loss = loss - torch.sum(pi_logprobs_chosen[i, -completion_lengths_chosen[i]:]) / batch_size
+        #for i in range(batch_size):
+        #    loss = loss - torch.sum(pi_logprobs_chosen[i, -completion_lengths_chosen[i]:]) / batch_size
 
         return loss
     
