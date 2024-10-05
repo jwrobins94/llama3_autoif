@@ -16,6 +16,10 @@ def passes(verifier_fn: Callable[[str], bool], input_str: str, result: bool) -> 
         
 if __name__ == '__main__':
     args = parse_args()
+    proceed = input('This script executes model-generated Python code. Please confirm that you are running this script in a sandboxed environment. (y/N)')
+    if proceed != 'y':
+        print('Aborting.')
+        exit()
 
     with open(args.input) as f:
         instances = [json.loads(line) for line in f.read().splitlines()]
