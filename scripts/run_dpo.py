@@ -5,9 +5,7 @@ from core.tokenizer import load_tokenizer
 from core.dpo_lightning_model import DPOLightningModel
 import argparse
 import json
-from torch.utils.data import DataLoader
-from transformers import PreTrainedTokenizerFast
-from data.dpo_data_collator import DPODataCollator
+from data.dpo_data_loader import construct_dpo_dataloader
 import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
@@ -30,63 +28,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
     return parser.parse_args()
 
-# TODO extract this out & cite source from my old project
-
-
-def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
-    rows_tokenized = []
-    for row in rows:
-        prompt = f'{row["query"]}\n{row["instruction"]}'
-        
-        for chosen, rejected in zip(row['chosen'], row['rejected']):
-            # unlike the paper, we don't repeat any completions here and instead pick the shortest of the two
-            messages_chosen = [
-                {'role': 'user', 'content': prompt},
-                {'role': 'assistant', 'content': chosen}
-            ]
-            chosen_tokens = tokenizer.apply_chat_template(
-                messages_chosen,
-                tokenize=True,
-                return_dict=True
-            )
-
-            messages_rejected = [
-                {'role': 'user', 'content': prompt},
-                {'role': 'assistant', 'content': rejected}
-            ]
-            rejected_tokens = tokenizer.apply_chat_template(
-                messages_rejected,
-                tokenize=True,
-                return_dict=True
-            )
-
-            messages_context = [
-                {'role': 'user', 'content': prompt}
-            ]
-            context_tokens = tokenizer.apply_chat_template(
-                messages_context,
-                add_generation_prompt=True,
-                tokenize=True,
-                return_dict=True
-            )
-            
-            row_tokenized = {}
-            for k, v in chosen_tokens.items():
-                row_tokenized[f'{k}_chosen'] = v
-            for k, v in rejected_tokens.items():
-                row_tokenized[f'{k}_rejected'] = v
-            for k, v in context_tokens.items():
-                row_tokenized[f'{k}_context'] = v
-
-            rows_tokenized.append(row_tokenized)
-
-    collator = DPODataCollator(tokenizer, context_length)
-    train_dataloader = DataLoader(rows_tokenized, batch_size=batch_size, shuffle=True, collate_fn=collator)
-    print(f'Number of batches: {len(train_dataloader)}')
-
-    return train_dataloader
-
-
 if __name__ == '__main__':
     args = parse_args()
 
@@ -96,7 +37,7 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
-    dataloader = construct_dataloader(tokenizer, data, args.context_length, args.batch_size)
+    dataloader = construct_dpo_dataloader(tokenizer, data, args.context_length, args.batch_size)
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
     # load the model a second time as our reference policy for the KL penalty
@@ -115,12 +56,9 @@ if __name__ == '__main__':
     logger = WandbLogger()
 
     trainer = lightning.Trainer(
-        accelerator='auto',
-        devices='auto',
         max_epochs=args.epochs,
-        accumulate_grad_batches=1, # TODO
         precision='bf16', # TODO
-        strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
+        strategy='deepspeed_stage_2' if args.deepspeed else 'auto', # TODO
         logger=logger,
         log_every_n_steps=1,
         enable_checkpointing=False
