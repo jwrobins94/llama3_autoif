@@ -7,8 +7,7 @@ import argparse
 import json
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizerFast
-from typing import Optional
-from dataclasses import dataclass
+from data.dpo_data_collator import DPODataCollator
 import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
@@ -32,83 +31,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 # TODO extract this out & cite source from my old project
-@dataclass
-class RewardDataCollatorWithPadding:
 
-    tokenizer: PreTrainedTokenizerFast
-    padding: bool|str = True
-    max_length: Optional[int] = None
-    pad_to_multiple_of: Optional[int] = None
-    return_tensors: str = "pt"
 
-    def __call__(self, features: list[dict[str, object]]) -> dict[str, object]:
-        features_context = []
-        features_chosen = []
-        features_rejected = []
-        # check if we have a margin. If we do, we need to batch it as well
-        for feature in features:
-            # check if the keys are named as expected
-            if (
-                "input_ids_chosen" not in feature
-                or "input_ids_rejected" not in feature
-                or "attention_mask_chosen" not in feature
-                or "attention_mask_rejected" not in feature
-                or "attention_mask_context" not in feature
-                or "attention_mask_context" not in feature
-            ):
-                raise ValueError("Missing column in batch")
-
-            features_context.append(
-                {
-                    "input_ids": feature["input_ids_context"],
-                    "attention_mask": feature["attention_mask_context"],
-                }
-            )
-            features_chosen.append(
-                {
-                    "input_ids": feature["input_ids_chosen"],
-                    "attention_mask": feature["attention_mask_chosen"],
-                }
-            )
-            features_rejected.append(
-                {
-                    "input_ids": feature["input_ids_rejected"],
-                    "attention_mask": feature["attention_mask_rejected"],
-                }
-            )
-        batch_context = self.tokenizer.pad(
-            features_context,
-            padding=self.padding,
-            max_length=self.max_length,
-            pad_to_multiple_of=self.pad_to_multiple_of,
-            return_tensors=self.return_tensors,
-        )
-        batch_chosen = self.tokenizer.pad(
-            features_chosen,
-            padding=self.padding,
-            max_length=self.max_length,
-            pad_to_multiple_of=self.pad_to_multiple_of,
-            return_tensors=self.return_tensors,
-        )
-        batch_rejected = self.tokenizer.pad(
-            features_rejected,
-            padding=self.padding,
-            max_length=self.max_length,
-            pad_to_multiple_of=self.pad_to_multiple_of,
-            return_tensors=self.return_tensors,
-        )
-        batch = {
-            "input_ids_context": batch_context["input_ids"],
-            "attention_mask_context": batch_context["attention_mask"],
-            "input_ids_chosen": batch_chosen["input_ids"],
-            "attention_mask_chosen": batch_chosen["attention_mask"],
-            "input_ids_rejected": batch_rejected["input_ids"],
-            "attention_mask_rejected": batch_rejected["attention_mask"],
-            "return_loss": True,
-        }
-        return batch
-
-def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], batch_size: int) -> DataLoader:
+def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
     rows_tokenized = []
     for row in rows:
         prompt = f'{row["query"]}\n{row["instruction"]}'
@@ -155,7 +80,7 @@ def construct_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str
 
             rows_tokenized.append(row_tokenized)
 
-    collator = RewardDataCollatorWithPadding(tokenizer)
+    collator = DPODataCollator(tokenizer, context_length)
     train_dataloader = DataLoader(rows_tokenized, batch_size=batch_size, shuffle=True, collate_fn=collator)
     print(f'Number of batches: {len(train_dataloader)}')
 
@@ -171,7 +96,7 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
-    dataloader = construct_dataloader(tokenizer, data, args.batch_size)
+    dataloader = construct_dataloader(tokenizer, data, args.context_length, args.batch_size)
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
     # load the model a second time as our reference policy for the KL penalty
