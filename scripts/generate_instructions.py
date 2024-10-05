@@ -8,6 +8,7 @@ from data.data_utils import load_sharegpt_queries
 import random
 import json
 from torch.nn.parallel import DistributedDataParallel as DDP
+import deepspeed
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -45,6 +46,7 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    deepspeed.init_distributed(rank=args.local_rank, world_size=torch.cuda.device_count())
     model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
 
     #if torch.cuda.is_available():
