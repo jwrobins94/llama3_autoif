@@ -1,7 +1,7 @@
 import torch
 from transformers import PreTrainedTokenizerFast, StopStringCriteria
 
-@torch.no_grad()
+@torch.inference_mode()
 def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompts: list[str], stop_str: str, max_tokens: int) -> list[str]:
     # TODO: Llama sometimes outputs <|eot|> when it shouln't, e.g. inside of a code block
     # We can make a slight improvement by accepting multiple stop strings to account for cases like this.
