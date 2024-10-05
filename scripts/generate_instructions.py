@@ -22,8 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     return parser.parse_args()
 
-def construct_prompt(seed_instructions: list[str]) -> str:
-    seed_instructions_str = '\n'.join(seed_instructions)
+def construct_prompt(seed_instructions_str: str) -> str:
     # This prompt is largely copied from the source paper: https://arxiv.org/pdf/2406.13542v3
     return f'''You are an expert at writing instructions. Please provide instructions that meet
 the following requirements:
@@ -39,7 +38,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     with open(args.input) as f:
-        seed_instructions = f.read().splitlines()
+        seed_instructions = f.read() # read as a whole
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
