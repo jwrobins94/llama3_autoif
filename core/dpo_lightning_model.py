@@ -102,12 +102,12 @@ class DPOLightningModel(lightning.LightningModule):
         for i in range(batch_size):
             chosen_delta_i = chosen_delta[i, -completion_lengths_chosen[i]:]
             for token, delta in zip(batch["input_ids_chosen"][i, -completion_lengths_chosen[i]:], chosen_delta_i):
-                print(self.tokenizer.decode(token), delta)
+                print(self.tokenizer.decode(token), delta.item())
         
             
             rejected_delta_i = rejected_delta[i, -completion_lengths_rejected[i]:]
             for token, delta in zip(batch["input_ids_rejected"][i, -completion_lengths_rejected[i]:], rejected_delta_i):
-                print(self.tokenizer.decode(token), delta)
+                print(self.tokenizer.decode(token), delta.item())
 
             logprob_ratio_delta = torch.sum(chosen_delta_i) - torch.sum(rejected_delta_i)
             losses[i] = -torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta)
