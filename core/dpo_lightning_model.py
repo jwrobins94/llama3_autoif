@@ -102,7 +102,6 @@ class DPOLightningModel(lightning.LightningModule):
 
         logprob_ratio_delta = (pi_lps_chosen - pi_lps_rejected) - (ref_lps_chosen - ref_lps_rejected)
         loss = -torch.mean(torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta))
-        raise ValueError('debugging!')
         return loss, (pi_lps_chosen, ref_lps_chosen, pi_lps_rejected, ref_lps_rejected)
 
     @torch.no_grad()
