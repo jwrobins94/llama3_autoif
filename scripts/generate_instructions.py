@@ -52,7 +52,7 @@ if __name__ == '__main__':
         model.to(f'cuda:{args.local_rank}')
 
     if args.deepspeed:
-        deepspeed.init_distributed(rank=args.local_rank, world_size=torch.cuda.device_count())
+        torch.distributed.init_process_group()
         model = wrap_with_deepspeed_inference(model)
 
     base_prompt = tokenizer.apply_chat_template(
