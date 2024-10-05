@@ -3,7 +3,9 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
+from core.inference_utils import generate_completions
+import glob
+from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -14,10 +16,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
-    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
+    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
     return parser.parse_args()
 
 
@@ -77,15 +79,22 @@ if __name__ == '__main__':
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
-    if args.deepspeed:
-        model = wrap_with_deepspeed_inference(model)
-
     if torch.cuda.is_available():
-        model.to('cuda:0')
+        model.to(f'cuda:{args.local_rank}')
 
-    with open(args.output, 'w') as output_file:
-        for instruction_idx, instruction_w_query in enumerate(instructions_w_queries):
-            print(f'Processing instruction {instruction_idx + 1} of {len(instructions_w_queries)}.')
+    torch.distributed.init_process_group('nccl', rank=args.local_rank)
+
+    sampler = DistributedSampler(instructions_w_queries, shuffle=False)
+    dataloader = DataLoader(instructions_w_queries, batch_size=1, sampler=sampler)
+
+    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
+        instruction_idx = 0
+        for batch in dataloader:
+            instruction_idx += 1
+            assert len(batch) == 1
+            instruction_w_query = batch[0]
+
+            print(f'[{args.local_rank}] Processing instruction {instruction_idx}.')
             messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(**instruction_w_query)}] for _ in range(args.num_verifications)]
             prompts = [
                     tokenizer.apply_chat_template(
@@ -130,3 +139,15 @@ if __name__ == '__main__':
             output_file.write('\n')
             output_file.flush()
 
+    torch.distributed.barrier()
+
+    if args.local_rank == 0:
+        # merge results
+        all_results = []
+        for path in glob.glob(f'{args.output}-*.jsonl'):
+            with open(path) as f:
+                local_data = f.read()
+                all_results.append(local_data)
+        
+        with open(f'{args.output}.jsonl', 'w') as f:
+            f.write(''.join(all_results))

@@ -4,7 +4,7 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import time
-from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
+from core.inference_utils import generate_completions
 from data.data_utils import load_sharegpt_queries
 import random
 import json
@@ -22,7 +22,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
-    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
 
     return parser.parse_args()
@@ -52,8 +51,6 @@ if __name__ == '__main__':
         model.to(f'cuda:{args.local_rank}')
 
     torch.distributed.init_process_group('nccl', rank=args.local_rank)
-    if args.deepspeed:
-        model = wrap_with_deepspeed_inference(model)
 
     base_prompt = tokenizer.apply_chat_template(
         [{'role': 'user', 'content': construct_prompt(seed_instructions)}],
