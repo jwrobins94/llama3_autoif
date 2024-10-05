@@ -9,7 +9,7 @@ from data.data_utils import load_sharegpt_queries
 import random
 import json
 import glob
-import deepspeed
+from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -42,6 +42,8 @@ Each line should alternate between Query and Instruction.'''
 if __name__ == '__main__':
     args = parse_args()
 
+    torch.distributed.init_process_group('nccl')
+
     with open(args.input) as f:
         seed_instructions = f.read() # read as a whole
 
@@ -64,27 +66,33 @@ if __name__ == '__main__':
 
     queries = load_sharegpt_queries()
 
-    start_ts = time.time()
+    # set up sampling
+    all_prompts = []
     random.seed(42)
+    for _ in range(args.limit):
+        query = queries[random.randint(0, len(queries) - 1)]
+        all_prompts.append({
+            'query': query,
+            'prompt': f'{base_prompt}\nQuery: {query}\nInstruction:'
+        })
+    sampler = DistributedSampler(all_prompts, shuffle=False)
+    dataloader = DataLoader(all_prompts, batch_size=args.batch_size, sampler=sampler)
+
+    start_ts = time.time()
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as f:
         num_generated = 0
-        while num_generated < args.limit:
-            prompts = [base_prompt]*args.batch_size
-            sampled_queries = [queries[random.randint(0, len(queries) - 1)] for _ in range(len(prompts))]
-            for i, prompt in enumerate(prompts):
-                query = sampled_queries[i]
-                if '\n' in query:
-                    query = query[:query.index('\n')]
-                prompts[i] = f'{prompt}\nQuery: {query}\nInstruction:'
+        for batch in dataloader:
+            num_generated += len(batch)
+            prompts = [row['prompt'] for row in batch]
+            sampled_queries = [row['query'] for row in batch]
             completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
-            num_generated += len(completions)
             for query, completion in zip(sampled_queries, completions):
                 f.write(json.dumps({
                     'query': query,
                     'instruction': completion.strip()
                 }))
                 f.write('\n')
-            print(f'[{args.local_rank}] Generated {num_generated} out of {args.limit} instructions.')
+            print(f'[{args.local_rank}] Generated {num_generated} instructions.')
     end_ts = time.time()
     print(f'[{args.local_rank}] Generated instructions in {end_ts - start_ts} seconds.')
 
