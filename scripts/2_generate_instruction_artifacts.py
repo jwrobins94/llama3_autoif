@@ -62,16 +62,13 @@ def construct_test_case_prompt(instruction: str) -> str:
     # A common failure mode I've noticed is that the test cases will be overly simple.
     # As a result, we will have poor screening of verification functions and our actual model generations
     # will have a 100% pass or fail rate.
-    return f'''Now write 3 test cases for this verification function.
-Write one test case per line in JSON format:
-{{"response": "some response", "result": true or false}}
-
-Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
+    return f'''Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
 {{"response": "That's a great idea! You can buy a bar of soap at the local pharmacy.", "result": true}}
 {{"response": "Babbel is a popular app used to learn languages and is suitable for beginners. However, it does not yet support the Bemba language.", "result": false}}
-{{"response": "I recommend that you bring at least $200 in cash for your trip to Bulgaria, as many companies will not accept credit cards.", "result": true}}
 
-Now, write 3 test cases (one per line) for your instruction: {instruction}'''
+Now, write 2 test cases for your instruction: "{instruction}"
+Write one test case per line in JSON format:
+{{"response": "some response", "result": true or false}}'''
 
 
 if __name__ == '__main__':
