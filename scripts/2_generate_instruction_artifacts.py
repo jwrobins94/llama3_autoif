@@ -47,12 +47,6 @@ def evaluate(response: str) -> bool:
     return 2 <= count <= 5
 ```
 
-Here is an example of a good output for the instruction: answer in at most 27 characters
-```
-def evaluate(response: str) -> bool:
-    return len(response) <= 27
-```
-
 The user will issue the following query: {query}
 Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
 Do not comment your code.'''
