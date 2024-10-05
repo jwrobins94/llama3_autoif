@@ -13,7 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
+    parser.add_argument(f'--max-tokens', type=int, default=512, help='Max tokens per generation')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
