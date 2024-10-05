@@ -22,6 +22,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
     parser.add_argument(f'--lr', type=float, default=1e-5, help='Peak learning rate')
+    parser.add_argument(f'--beta1', type=float, default=0.9, help='AdamW beta1')
+    parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of sort_completions.py')
@@ -38,6 +40,7 @@ if __name__ == '__main__':
     tokenizer = load_tokenizer(args.hf_api_token)
 
     dataloader = construct_dpo_dataloader(tokenizer, data, args.context_length, args.batch_size)
+    print(f'Number of batches: {len(dataloader)}')
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
     # load the model a second time as our reference policy for the KL penalty
@@ -50,7 +53,9 @@ if __name__ == '__main__':
         args.kl_beta,
         args.lr,
         len(dataloader) * args.epochs,
-        args.warm_up_steps
+        args.warm_up_steps,
+        args.beta1,
+        args.beta2
     )
 
     logger = WandbLogger()

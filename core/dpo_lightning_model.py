@@ -11,7 +11,9 @@ class DPOLightningModel(lightning.LightningModule):
                  kl_beta: float,
                  lr: float,
                  num_train_steps: int,
-                 warm_up_steps: int
+                 warm_up_steps: int,
+                 beta1: float,
+                 beta2: float
         ):
         super().__init__()
         self.model = model
@@ -22,11 +24,13 @@ class DPOLightningModel(lightning.LightningModule):
         self.warm_up_steps = warm_up_steps
 
         self.tokenizer = tokenizer
+        self.beta1 = beta1
+        self.beta2 = beta2
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.model.parameters(),
                                       lr=self.learning_rate,
-                                      betas=(0.9, 0.95)) # TODO extract to command line args
+                                      betas=(self.beta1, self.beta2))
 
         # Calculate total training steps
         num_devices = self.trainer.num_devices
@@ -42,7 +46,6 @@ class DPOLightningModel(lightning.LightningModule):
         self.log('lr', lr, on_step=True, logger=True, prog_bar=True, rank_zero_only=True)
 
     def _compute_logprob_sum(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module, completion_lengths: torch.Tensor) -> torch.Tensor:
-        batch_size = input_ids.shape[0]
         targets = input_ids[:, 1:].unsqueeze(-1)
 
         logits = model(input_ids = input_ids,

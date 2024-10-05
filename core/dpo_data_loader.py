@@ -51,6 +51,4 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
 
     collator = DPODataCollator(tokenizer, context_length)
     train_dataloader = DataLoader(rows_tokenized, batch_size=batch_size, shuffle=True, collate_fn=collator)
-    print(f'Number of batches: {len(train_dataloader)}')
-
     return train_dataloader
