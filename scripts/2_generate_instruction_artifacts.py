@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
+    parser.add_argument(f'--max-tokens', type=int, default=512, help='Max tokens per generation')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 
                 all_prompts.extend(prompts)
             
-            completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token], args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             verified_completions = [fn_prefix + completion for completion in completions]
 
             testcase_prefix = '{"response": "'
@@ -138,7 +138,7 @@ if __name__ == '__main__':
                     prompts_2[i] = prompt + f'{testcase_prefix}'
                 all_prompts_2.extend(prompts_2)
 
-            completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token], args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             testcase_completions = [testcase_prefix + completion for completion in completions]
             
             for group_idx, (query, instruction) in enumerate(zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction'])):
