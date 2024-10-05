@@ -14,7 +14,6 @@ def passes(verifier_fn: Callable[[str], bool], input_str: str, result: bool) -> 
     except Exception as e:
         return False
         
-
 if __name__ == '__main__':
     args = parse_args()
 

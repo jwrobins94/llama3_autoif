@@ -42,9 +42,9 @@ if __name__ == '__main__':
     dataloader = construct_dpo_dataloader(tokenizer, data, args.context_length, args.batch_size)
     print(f'Number of batches: {len(dataloader)}')
 
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
     # load the model a second time as our reference policy for the KL penalty
-    ref_model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    ref_model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     lightning_model = DPOLightningModel(
         model,
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     trainer = lightning.Trainer(
         max_epochs=args.epochs,
-        precision='bf16', # TODO
+        precision='bf16', # hardcode to bf16 since the model itself is loaded in bf16
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto', # TODO
         logger=logger,
         log_every_n_steps=1,

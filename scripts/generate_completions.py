@@ -38,7 +38,7 @@ if __name__ == '__main__':
         all_instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')

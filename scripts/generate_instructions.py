@@ -5,7 +5,7 @@ import argparse
 import torch
 import time
 from core.inference_utils import generate_completions
-from data.data_utils import load_sharegpt_queries
+from core.data_utils import load_sharegpt_queries
 import random
 import json
 import glob
@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 def construct_prompt(seed_instructions_str: str) -> str:
-    # This prompt is largely copied from the source paper: https://arxiv.org/pdf/2406.13542v3
+    # This prompt is based heavily on the one provided in the source paper: https://arxiv.org/pdf/2406.13542v3
     return f'''You are an expert at writing instructions. Please provide instructions that meet
 the following requirements:
 - Instructions constrain the format but not style of the response
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         seed_instructions = f.read() # read as a whole
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
