@@ -91,6 +91,7 @@ if __name__ == '__main__':
         instruction_idx = 0
         for batch in dataloader:
             instruction_idx += 1
+            print(batch)
             assert len(batch) == 1
             instruction_w_query = batch[0]
 
