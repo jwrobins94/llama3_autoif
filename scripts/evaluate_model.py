@@ -23,16 +23,16 @@ if __name__ == '__main__':
     args = parse_args()
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    #model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
-    #if torch.cuda.is_available():
-    #    model.to('cuda:0')
-
-    if args.ckpt:
-        state_dict = load_state_dict(args.ckpt)
-    else:
-        state_dict = None
-    scores, samples = run_ifeval(args.model, tokenizer, args.batch_size, args.limit or None, state_dict)
+    # We delegate model loading to run_ifeval(...) to maintain compatibility with lm_eval's data parallelization
+    scores, samples = run_ifeval(
+        args.model,
+        tokenizer,
+        args.batch_size,
+        args.context_length,
+        args.hf_api_token,
+        args.limit or None,
+        load_state_dict(args.ckpt) if args.ckpt else None)
     print(scores)
 
     if args.output:
