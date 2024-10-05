@@ -36,7 +36,8 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
     else:
         state_dict = None
         pretrained_name = model_name
-
+    from transformers import AutoModelForCausalLM
+    AutoModelForCausalLM.from_pretrained()
     model = LlamaForCausalLM.from_pretrained(pretrained_name, config=model_config, token=hf_api_token,
                                              torch_dtype=torch.bfloat16,
                                                 state_dict=state_dict)
