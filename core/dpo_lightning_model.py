@@ -69,8 +69,6 @@ class DPOLightningModel(lightning.LightningModule):
             min_idx = torch.argmin(logprobs[i, -completion_length:])
             print(f'"{self.tokenizer.decode(completion_ids[min_idx])}"')
             print(torch.exp(logprobs[i, -completion_length:])[min_idx])
-            print(torch.min(torch.exp(logprobs[i, -completion_length:])))
-            print(torch.min(logprobs[i, -completion_length:]))
             res[i] = torch.sum(logprobs[i, -completion_length:])
         return res
 
@@ -83,19 +81,23 @@ class DPOLightningModel(lightning.LightningModule):
             completion_lengths_chosen = seq_lengths_chosen - context_lengths
             completion_lengths_rejected = seq_lengths_rejected - context_lengths
             
+            print('ref-chosen')
             ref_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
                                                        batch["attention_mask_chosen"],
                                                        self.ref_model,
                                                        completion_lengths_chosen)
+            print('ref-rejected')
             ref_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
                                                        batch["attention_mask_rejected"],
                                                        self.ref_model,
                                                        completion_lengths_rejected)
         
+        print('pi-chosen')
         pi_lps_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
                                                     batch["attention_mask_chosen"],
                                                     self.model,
                                                     completion_lengths_chosen)
+        print('pi-rejected')
         pi_lps_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
                                                     batch["attention_mask_rejected"],
                                                     self.model,
