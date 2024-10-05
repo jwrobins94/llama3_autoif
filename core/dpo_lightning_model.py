@@ -66,9 +66,9 @@ class DPOLightningModel(lightning.LightningModule):
         res = torch.zeros([batch_size], device=input_ids.device)
         for i, completion_length in enumerate(completion_lengths):
             print(self.tokenizer.decode(input_ids[i, -completion_length:]))
-            print(torch.exp(logprobs[i, -completion_length:]))
+            print(torch.min(torch.exp(logprobs[i, -completion_length:])))
+            print(torch.min(logprobs[i, -completion_length:]))
             res[i] = torch.sum(logprobs[i, -completion_length:])
-        print(res)
         return res
 
     def compute_loss(self, batch) -> torch.Tensor:
