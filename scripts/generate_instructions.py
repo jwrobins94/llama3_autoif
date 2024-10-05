@@ -9,6 +9,7 @@ from data.data_utils import load_sharegpt_queries
 import random
 import json
 import glob
+import deepspeed
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -51,6 +52,7 @@ if __name__ == '__main__':
         model.to(f'cuda:{args.local_rank}')
 
     if args.deepspeed:
+        deepspeed.init_distributed(rank=args.local_rank, world_size=torch.cuda.device_count())
         model = wrap_with_deepspeed_inference(model)
 
     base_prompt = tokenizer.apply_chat_template(
