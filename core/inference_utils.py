@@ -7,6 +7,7 @@ def wrap_with_deepspeed_inference(model: torch.nn.Module) -> torch.nn.Module:
     ds_engine = deepspeed.init_inference(model,
                                 dtype=torch.bfloat16,
                                 #injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
+                                tensor_parallel={"tp_size": 6},
                                 checkpoint=None, # TODO load checkpoint from args
                                 )
     return ds_engine.module
