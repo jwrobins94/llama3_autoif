@@ -15,14 +15,17 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
+    
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--limit', type=int, required=True, help='Number of new instructions to generate')
     parser.add_argument(f'--tokens-per-completion', type=int, default=512, help='Max completion length')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
-    parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
+
+    parser.add_argument(f'--input', type=str, required=True, help='Path to a newline-delimited list of Query-Instruction pairs; see data/seed_instruction_pairs.txt for an example')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
-    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
+
+    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
 
     return parser.parse_args()
 

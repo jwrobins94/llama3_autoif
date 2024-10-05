@@ -4,7 +4,7 @@ from typing import Callable
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to filter (instruction, verifiers, test_cases) tuples for self-consistency')
-    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of generate_instruction_artifacts.py')
+    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 4_generate_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write filtered (instruction, verifiers, test_cases) tuples')
     return parser.parse_args()
 

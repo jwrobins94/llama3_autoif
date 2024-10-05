@@ -15,6 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
+    
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--strategy', type=str, default='deepspeed_stage_2', help='Distributed training strategy')
@@ -26,7 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
 
-    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of sort_completions.py')
+    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 5_sort_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
     return parser.parse_args()
 
