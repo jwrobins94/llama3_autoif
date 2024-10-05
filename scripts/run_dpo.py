@@ -188,7 +188,7 @@ if __name__ == '__main__':
     )
 
     logger = WandbLogger()
-    logger.watch(model, log="all", log_freq=1)
+    logger.watch(model, log="gradients", log_freq=1)
 
     trainer = lightning.Trainer(
         accelerator='auto',
