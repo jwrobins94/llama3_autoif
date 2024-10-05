@@ -5,10 +5,9 @@ import argparse
 import torch
 import time
 from core.inference_utils import generate_completions
-from core.data_utils import load_sharegpt_queries
+from core.data_utils import load_sharegpt_queries, merge_outputs
 import random
 import json
-import glob
 from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
@@ -97,14 +96,4 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     if args.local_rank == 0:
-        # merge results
-        all_results = []
-        for path in glob.glob(f'{args.output}-*.jsonl'):
-            with open(path) as f:
-                local_data = f.read()
-                all_results.append(local_data)
-        
-        with open(f'{args.output}.jsonl', 'w') as f:
-            f.write(''.join(all_results))
-
-        
+        merge_outputs(args.output)

@@ -1,4 +1,5 @@
 from datasets import load_dataset
+import glob
 
 def extract_query(row) -> dict[str, str]:
     conversations = row['conversations']
@@ -20,3 +21,13 @@ def load_sharegpt_queries(min_query_len: int = 5, max_query_len: int = 200) -> l
     ).filter(lambda row : min_query_len <= len(row['query']) <= max_query_len)
 
     return [row['query'] for row in data_train]
+
+def merge_outputs(output_prefix: str, suffix=".jsonl"):
+    all_results = []
+    for path in glob.glob(f'{output_prefix}-*{suffix}'):
+        with open(path) as f:
+            local_data = f.read()
+            all_results.append(local_data)
+    
+    with open(f'{output_prefix}{suffix}', 'w') as f:
+        f.write(''.join(all_results))
