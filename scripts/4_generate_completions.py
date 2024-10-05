@@ -69,7 +69,7 @@ if __name__ == '__main__':
                     ) for messages in messages_mat
                 ]
                 all_prompts.extend(prompts)
-            completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token], args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
             completions_per_query = args.num_completions #* 2
             
