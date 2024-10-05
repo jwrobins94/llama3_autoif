@@ -1,16 +1,6 @@
 import torch
 from transformers import PreTrainedTokenizerFast, StopStringCriteria
 
-def wrap_with_deepspeed_inference(model: torch.nn.Module) -> torch.nn.Module:
-    import deepspeed
-    #deepspeed.init_distributed()
-    ds_engine = deepspeed.init_inference(model,
-                                dtype=torch.bfloat16,
-                                #injection_policy={LlamaDecoderLayer: ('self_attn.o_proj', 'mlp.down_proj')},
-                                checkpoint=None, # TODO load checkpoint from args
-                                )
-    return ds_engine.module
-
 @torch.no_grad()
 def generate_completions(model: torch.nn.Module, tokenizer: PreTrainedTokenizerFast, prompts: list[str], stop_str: str, max_tokens: int) -> list[str]:
     batch = tokenizer(prompts, return_tensors='pt', padding=True, padding_side='left') # left padding so that completions are all at the end

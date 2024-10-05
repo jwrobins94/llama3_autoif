@@ -6,7 +6,6 @@ from core.evaluation import run_ifeval
 import argparse
 import json
 import torch
-from core.inference_utils import wrap_with_deepspeed_inference
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to run IFEval on a trained model')
@@ -17,7 +16,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--limit', type=int, default=None, help='Optional limit on the number of evaluation rows')
     parser.add_argument(f'--batch-size', type=int, default=32, help='Batch size for evaluation')
     parser.add_argument(f'--output', type=str, default=None, help='Path to write sample results')
-    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -25,9 +23,6 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
-
-    if args.deepspeed:
-        model = wrap_with_deepspeed_inference(model)
 
     if torch.cuda.is_available():
         model.to('cuda:0')
