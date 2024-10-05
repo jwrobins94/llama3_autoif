@@ -43,4 +43,22 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
                                              attn_implementation="flash_attention_2",
                                                 state_dict=state_dict)
     model.config.pad_token_id = tokenizer.pad_token_id
+
+    apply_activation_checkpointing(model)
     return model
+
+def apply_activation_checkpointing(model):
+    from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+        CheckpointImpl, apply_activation_checkpointing, checkpoint_wrapper
+    )
+    from transformers.models.llama.modeling_llama import LlamaDecoderLayer
+    import functools
+
+    check_fn = lambda submodule: isinstance(submodule, LlamaDecoderLayer)
+    wrapper = functools.partial(
+        checkpoint_wrapper,
+        checkpoint_impl=CheckpointImpl.NO_REENTRANT,
+    )
+    apply_activation_checkpointing(
+        model, checkpoint_wrapper_fn=wrapper, check_fn=check_fn
+    )
