@@ -1,3 +1,4 @@
+import torch.distributed
 from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
@@ -7,6 +8,7 @@ from core.inference_utils import generate_completions, wrap_with_deepspeed_infer
 from data.data_utils import load_sharegpt_queries
 import random
 import json
+import glob
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -61,6 +63,7 @@ if __name__ == '__main__':
     queries = load_sharegpt_queries()
 
     start_ts = time.time()
+    random.seed(42)
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as f:
         num_generated = 0
         while num_generated < args.limit:
@@ -70,16 +73,30 @@ if __name__ == '__main__':
                 query = sampled_queries[i]
                 if '\n' in query:
                     query = query[:query.index('\n')]
-                prompts[i] = f'{prompt}\nQuery: {query}\nInstruction: '
+                prompts[i] = f'{prompt}\nQuery: {query}\nInstruction:'
             completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
             num_generated += len(completions)
             for query, completion in zip(sampled_queries, completions):
                 f.write(json.dumps({
                     'query': query,
-                    'instruction': completion
+                    'instruction': completion.strip()
                 }))
                 f.write('\n')
-            print(f'Generated {num_generated} out of {args.limit} instructions.')
+            print(f'[{args.local_rank}] Generated {num_generated} out of {args.limit} instructions.')
     end_ts = time.time()
-    print(f'Generated instructions in {end_ts - start_ts} seconds.')
+    print(f'[{args.local_rank}] Generated instructions in {end_ts - start_ts} seconds.')
+
+    torch.distributed.barrier()
+
+    if args.local_rank == 0:
+        # merge results
+        all_results = []
+        for path in glob.glob(f'{args.output}-*.jsonl'):
+            with open(path) as f:
+                local_data = f.read()
+                all_results.append(local_data)
+        
+        with open(f'{args.output}.jsonl', 'w') as f:
+            f.write(''.join(all_results))
+
         
