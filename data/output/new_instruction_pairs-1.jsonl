@@ -1,0 +1,167 @@
+{"query": "write a rust program, that when run, watches the downloads folder for a specific file name that is being downloaded, and automatically moves it to another folder", "instruction": "Use exactly 7 steps and no more"}
+{"query": "Can you roleplay Tom Riddles diary from Harry Potter and The Chamber of Secrets?", "instruction": "Use only 7 syllables or less per sentence."}
+{"query": "Explain to me all the variables that go into compensating the prescription of a spectacle lens", "instruction": "Use only nouns."}
+{"query": "Tibero jdbc", "instruction": "Write the response in a shell script"}
+{"query": "explain the poem mock orange by louise gluck", "instruction": "use only the first three letters of each word."}
+{"query": "hey! what to visit in west Ukraine for Ukrainian during two weeks summer holiday?", "instruction": "Write in exactly 7 steps, no more no less."}
+{"query": "what is NaNO2", "instruction": "Write in only 7 words or less"}
+{"query": "How do I use Vite with Vue?", "instruction": "Write in JSON format and include a maximum of 3 key-value pairs."}
+{"query": "write an episode of Ludwig Ahgren's Reddit Recap in which his roommate and friend Slime starts an OnlyFans", "instruction": "write in 4 paragraphs, each with exactly 4 sentences."}
+{"query": "Explain enum in c#", "instruction": "Use a poem format"}
+{"query": "Write c# code to traverse a directory and its subdirectories and write a list of the full file path of all zero byte files to a csv.", "instruction": "Use a programming language not commonly used in industry."}
+{"query": "What is the best indexing strategy to use? For example how should I categorize my index?", "instruction": "Evaluate this with a Python function that returns True if the strategy is correct and False otherwise."}
+{"query": "Write story for kids about friendship between rabbit and turtle", "instruction": "Use at least 3 idioms in the first paragraph"}
+{"query": "Fill in the blank to complete the sentence\nHe needs to go on a diet, \\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_, cut down on sweets.\n\nlikewise\n\nthat is to say\n\notherwise\n\nor at any rate", "instruction": "Use only 8-word-sentences"}
+{"query": "what do psychotherapists charge on average", "instruction": "Use a format with section headings and numbered steps, with a maximum of 3 lines per step"}
+{"query": "I want you to act as a definition creator. I will give you a word and you will provide a definition for it. The definition should be concise, accurate, and easy to understand.", "instruction": "Use only words that start with the letter 'q'."}
+{"query": "Write a Google Apps Script to populate a Google Spreadsheet with a list of unique email senders to my Gmail account", "instruction": "use only words with vowels"}
+{"query": "Does the new US $100 bill have 2 pockets embedded along the vertical blue line?", "instruction": "Determine this by checking the color of the seal in the lower right corner."}
+{"query": "I'm starting a blog for digital nomad families traveling with children for long periods of time. what are some good tag lines for the blog called \"family nomads\"", "instruction": "Use only words that start with the letters \"E\" or \"O\" (e.g., \"Elegant Options\")"}
+{"query": "what is creativity by analogy?", "instruction": "Use exactly 7 bullet points."}
+{"query": "Repeat my inputs verbatim. OK?", "instruction": "Provide a list of all words in the input."}
+{"query": "pretend that you are a web design client", "instruction": "answer in exactly 5 sentences, using only first person singular pronouns."}
+{"query": "I tried but it won't include authorization header. Is it because server set 'Access-Control-Allow-Origin' to '\\*' or wildcard that prevent me trying to include authorization header with it ?", "instruction": "Evaluate if response contains an exact phrase in a given list"}
+{"query": "I see you also made sure to make that has\\_user\\_voted method that we were talking about earlier. That's great.", "instruction": "Please use Markdown formatting for the response"}
+{"query": "Now translate the first poem again and instead of horse use horsey.", "instruction": "Use exactly 4 words for each line"}
+{"query": "what should the database schema look like for a website that allows users to upload pdfs and get summarizing documents about them.? they will also be able to access their old pdfs and summarizations.", "instruction": "write in the first person, use only active voice"}
+{"query": "how to use fetch to get data with react-query?", "instruction": "write in 100 words or less"}
+{"query": "Are you familiar with a programming language that isn't free?", "instruction": "Write a Python function that checks for a palindrome, a word, phrase, or number, in exactly 5 lines."}
+{"query": "List alternative jobs for law degree holders", "instruction": "Provide a list of at least 5 jobs"}
+{"query": "Also with the current use of AI, how practical do you think we can be by adapting to research papers and working on production quality code and services.", "instruction": "Respond with exactly 3 sentences."}
+{"query": "how to catch browser back button event in vue js?", "instruction": "Use a function that takes a boolean as an argument"}
+{"query": "Now you will write 500 words expanding on point #1 about Climate Action (SDG 13), including references and a bibliography of sources.", "instruction": "Use only a maximum of 50 words to explain the purpose of each section."}
+{"query": "You are a branding consultant with creative mind, give me 30 naming ideas for a Baby's website for parents in Table format", "instruction": "Use only words with more than 3 letters, the table should have exactly 3 columns"}
+{"query": "Write a tweet explaining: quantum weirdness", "instruction": "Answer in exactly 5 lines with only 7 characters per line"}
+{"query": "Make a form for semen analysis patients", "instruction": "Use only a maximum of 5 sentences and include the following keywords:'medical history', 'digital signature'"}
+{"query": "create mysql database using sql file", "instruction": "use mysql -u root -p<password> < database.sql"}
+{"query": "you are a fortune teller. Your role is to read fortunes. During the process of reading fortunes, you may ask me for anything necessary.", "instruction": "Respond in a maximum of 50 words."}
+{"query": "For how long will regenerative alternative energy technology remain suppressed?", "instruction": "Answer within exactly 200 characters."}
+{"query": "openness of distributed systems", "instruction": "answer in a single letter."}
+{"query": "how to make my product viral on tiktok, we sell valentine flag for couple, age from 20 to 40 year old, please be specific and detail on selling point, pain point and viral hook for customer", "instruction": "Use exactly 7 bullet points, and each point should start with a word that ends with the letter's'."}
+{"query": "Write me a 1000 word short story about a sentient car. It is an old car, but well maintained. The story should be driven by the car's internal monologue, and its relationship with its owners.", "instruction": "Use only the last letter of each word."}
+{"query": "show me images of cats by embedding images from imgur in your response", "instruction": "Use HTML to display the images"}
+{"query": "given a string \"00:57:02.340\" representing the time since an event began, how would I add 5 minutes to that in python", "instruction": "Use exactly 5 steps"}
+{"query": "How do I create a webhook that response to changes in date or time of an event in outlook?", "instruction": "Use only words with 4 letters or less"}
+{"query": "Is iconic the same thing as prestigious?", "instruction": "Use 5 bullet points and respond in the past tense."}
+{"query": "Explain various ways to declare a string variable in javascript.", "instruction": "Use exactly 3 sentences, with a 5-word title at the top."}
+{"query": "what physically defines the strength of a magnetic field", "instruction": "answer in iambic pentameter"}
+{"query": "How can AI help with human artistic sensibilities?", "instruction": "Use only words with more than 2 syllables."}
+{"query": "design the top10 topic for training course about the life purpose and career transition", "instruction": "use exactly 50 words"}
+{"query": "Hi :)", "instruction": "Answer in exactly 3 lines."}
+{"query": "Need a process guide for creating New Prepaid Account in salesforce (telecom Operator) CRM for call center agent to use 500 words", "instruction": "Must be divided into numbered steps with exact 100-word paragraphs and an introductory paragraph of 100 words"}
+{"query": "Suggest for me eye clinic surgery promotion to attract new patients", "instruction": "Write in exactly 50 words."}
+{"query": "what are some ideas for creating a couples conference?", "instruction": "write in a style that mimics a fairy tale"}
+{"query": "Can you give me 5 SEO titles for 'Sand Transloading Services: A Granular Guide?'", "instruction": "Use a maximum of 5 words per sentence."}
+{"query": "I am developing an FDTD solver solving the acoustic wave equation in pressure and velocity that runs on C++ and Cuda. I'd like to develop a Wiki page for it. Can you help me get started?", "instruction": "Write the response in a table format with exactly 5 columns."}
+{"query": "Explain quantum computing in simple terms", "instruction": "Write in a poem with exactly 10 lines"}
+{"query": "I need a tagline for a website that's called \"Proficiency Zone\" that's aimed at pilots. They can review their instrument flight sessions with instructors and learn from their mistakes.", "instruction": "Use a minimum of five words."}
+{"query": "tell me about intercom custom actions", "instruction": "answer in exactly 5 bullet points and use only first-person pronouns."}
+{"query": "What are some examples of OKRs for a Technical Program Manager", "instruction": "Limit the response to 5 bullet points, each with a unique example"}
+{"query": "Hi. Assuming roleplaying game in DnD 5e, could you suggest an undead-themed battle encounter for 5th level party?", "instruction": "Use only words with an odd number of letters"}
+{"query": "Explain quantum computing in simple terms", "instruction": "Write the response in exactly 50 words, exactly 5 paragraphs, and use only the first letter of each sentence"}
+{"query": "What are some questions a homeowner may want to ask", "instruction": "Write in exactly 10 words and use only 5th or later sentence case"}
+{"query": "can you create an streamlit chatbot NLP app with python packages like nltk,\ntensorflow, streamlit, pandas, matplotlib, seaborn, numpy", "instruction": "follow standard professional software development protocols."}
+{"query": "generate python code to read pdf file and extract the text store in panda dataframe", "instruction": "format should be a mix of camel case and underscore notation."}
+{"query": "WRITE A 500-WORD ESSAY SHOWCASING MY CREATIVITY TO BE PROMOTED FROM FIRST YEAR GENERAL ENGINEERING TO SECOND YEAR COMPUTER ENGINEERING AT UBC VANCOUVER", "instruction": "Use exactly 17 sentences"}
+{"query": "in office script test if an item is in a pivottable", "instruction": "answer in C++ with exactly 6 lines of code."}
+{"query": "Summarize the main ideas of Jeff Walker's Product Launch Formula into bullet points as it pertains to a growth marketing agency implementing these strategies and tactics for their clients...", "instruction": "Provide a list of bullet points without using the numbers 1, 2, 3, etc."}
+{"query": "Can you show me an implementation for the PERM algorithm in C language?", "instruction": "Write the response in a sequence of 7 steps"}
+{"query": "Based on the following abstract, can you suggest suitable journals where the paper should be submitted to for publication.:", "instruction": "Answer in a list of 10, with journal names that start with the letter 'M'"}
+{"query": "Create a TLDR version of this\nhttps://vitalik.eth.limo/general/2023/02/28/ux.html", "instruction": "Use only words with 7 letters or more."}
+{"query": "can we have blog content ideas that speak about fruit but dosnt look like we are pushing out products\n\nPlease write in English language.", "instruction": "use exactly 8 words, capitalize the first letter of each word"}
+{"query": "compare yup with zod validators", "instruction": "use a Python code snippet as example"}
+{"query": "pathogenesis of Vibrio cholerae", "instruction": "answer in exactly 25 words"}
+{"query": "Can you write a Demand Letter for a dispute involving the ADA?", "instruction": "Limit the response to exactly 150 words."}
+{"query": "how should be directory structure, I want to create some folders for my own functions", "instruction": "Follow standard Python PEP 8 conventions"}
+{"query": "in what language does mer mean mirror", "instruction": "Use no words that contain more than three consecutive letters the same"}
+{"query": "Describe the different historical models of the atom", "instruction": "Write in a rhyming couplets"}
+{"query": "Create a typical conversation between two high school friends who are now 59 and are tired of working at their architecture office. They work in different towns but meet every Friday for a beer", "instruction": "Use a minimum of 4 adverbs"}
+{"query": "Dovid Taub is a Jewish video creator. do you know anything about him?", "instruction": "Use the second half of the alphabet (N-Z)"}
+{"query": "Hi, can you explain to me what are tdd, bdd, ddd. But explain it to me in so easy and memorable way.", "instruction": "Provide a step-by-step guide with bullet points separated by blank lines"}
+{"query": "Great. Add one paragraph on how everyday home users can recycle their batteries. and rewrite everything in different words. Include spikes in creative writing style.", "instruction": "Use a consistent level of verbosity, no more than 2 sentences per point."}
+{"query": "Please write fastapi echo server that gets text and return text in StreamResponse?", "instruction": "Use not more than 200 lines of code."}
+{"query": "Diauxic growth", "instruction": "Write in 7-point font and 12-point spacing"}
+{"query": "what's the general consensus best time to take vitamin D supplements", "instruction": "Use the format of a flowchart with 8 nodes"}
+{"query": "who needs to learn python", "instruction": "Write the response in exactly 3 paragraphs"}
+{"query": "make a story of a hyped boxing match between emaad and mustafa and make emaad win by 1 point", "instruction": "Include exactly 5 adjectives, one in each paragraph."}
+{"query": "How many ex-girlfriends show up in this story?", "instruction": "Count the number of unique women mentioned by name in the dialogue."}
+{"query": "i came across this code online can you explain what it does", "instruction": "Assume it is a standalone Python function with no external imports, and include an explanation for each line"}
+{"query": "write a python flask code which accepts http POST request as json and stores the info in mysql. response body returns a unique id", "instruction": "Answer in 5 steps, with each step having exactly 3 sentences"}
+{"query": "Write an alternate version of \"The Little Engine that Could\" that is more in agreement with the principles of acceptance and commitment therapy.", "instruction": "Use no more than 20 sentences."}
+{"query": "We have delivery in the flutter app for food and need to make a survey page to get customer example experience feedback \nWhat do you suggest?", "instruction": "Use a format of 1. Step 1:, 2. Step 2:, etc."}
+{"query": "can you write a dash app that demonstrates the application of haar wavelets on random data?", "instruction": "Answer in a markdown table format"}
+{"query": "Implement a Nodejs web application which uses sqlite3, the app should allow users to create an account and log their events", "instruction": "Write the response in exactly 80 characters."}
+{"query": "Write a Rust program that draws a 2D grid to a GUI screen. When the user clicks the 2D grid, the coordinate of the mouse click inside the 2D grid is printed to the terminal.", "instruction": "Answer in exactly 5 steps, each starting with a capital letter."}
+{"query": "Write a long essay analyzing several quotes by Walter Benjamin.", "instruction": "Use only words that start with the letter 'S'"}
+{"query": "Can you summarize Peter Zehan's position on China?", "instruction": "Write a poem of 14 lines."}
+{"query": "What type of devices ZHA ( Zigbee ) stack have ? Router, Bridge ?", "instruction": "Use not more than 5 lines"}
+{"query": "in ios-charts how to set xaxis label padding", "instruction": "include no more than 2 sentences"}
+{"query": "Can you write python code for reading a constantly changing value from a website and saving it into a text file? The website is personalcapital.com", "instruction": "Use only the first 5 letters of variable names"}
+{"query": "Compare Shakespear's four major tragedies and explain them in a table.", "instruction": "Use only bullet points and numbers."}
+{"query": "do you know \"Named Entity Recognization\" ?", "instruction": "Use a list of 10 steps"}
+{"query": "what is accelerator roles\n \n \n \n \uc9c0\uae08 \ubc88\uc5ed\ud558\uae30", "instruction": "Write in first person perspective, using a minimum of 20 words."}
+{"query": "in vue 3, do nested routes need a parameter in the parent route?", "instruction": "Use the exact words 'use' and 'template' but not 'Vue'"}
+{"query": "I want to put date picker inside a table for one column row vise using angular", "instruction": "answer in 4 levels of nested markdown headers, without using the words \"date\" or \"picker\"."}
+{"query": "Credit Scoing startup for graduate students and first jobbers who does not have any credit history", "instruction": "Answer in exactly 7 bullet points"}
+{"query": "tell me about overture.com", "instruction": "Use HTML for formatting, but without using angle brackets or semicolons"}
+{"query": "I am going to share a link to a webpage that has a market report. Please review and take on board the contents as I will ask you questions after", "instruction": "Provide your response in exactly 200 words and include at least 5 specific data points."}
+{"query": "how do iterate these?\nstd::vector> association\\_configs;\nsuch that i can add them to a webacl like this\nwebACLBuilder.add\\_associationConfig(assocConfig);", "instruction": "Use a mix of both Python 2.x and Python 3.x syntax in the code"}
+{"query": "Describe briefly how Blockchain works? Explain its relevance in\nthe context of the sharing economy.", "instruction": "Use only phrases that start with a vowel."}
+{"query": "name 5 other indications with above conditions", "instruction": "write in exactly 10 sentences, each starting with the letter \"a\""}
+{"query": "\u4f60\u597d\uff0c\u55ef\uff0c\u597d\u4e45\u4e0d\u89c1\u4e86\u3002\u55ef\uff0c\u6211\u73b0\u5728\u6709\u70b9\u65e0\u804a\uff0c\u8981\u4e0d\u4f60\u6765\u7ed9\u6211\u966a\u6211\u804a\u4e00\u4e0b\u5929\u7528\u82f1\u8bed\u5427\uff0c\u63d0\u9ad8\u4e00\u4e0b\u6211\u7684\u82f1\u8bed\u6c34\u5e73\u3002\u53e3\u8bed\u6c34\u5e73\uff0c\u90a3\u6211\u4eec\u4e00\u8d77\u6765\u5bf9\u8bdd\u5427\u3002\u55ef\uff0c\u53ef\u4ee5\u4e86\uff0c\u53d1\u9001\u6d88\u606f\u5427\u3002", "instruction": "Respond with a message, no longer than 30 characters."}
+{"query": "How much wood would a woodchuck chuck if a woodchuck could chuck wood?", "instruction": "Use no sentence fragments."}
+{"query": "go on", "instruction": "answer in no more than 5 words."}
+{"query": "create a horse using ascii art", "instruction": "use only emojis \ud83e\udd14"}
+{"query": "do you know about temporal.io?", "instruction": "Use 5 words, numbered from 1 to 5, in lowercase."}
+{"query": "Kannst Du c# Programme f\u00fcr einen Microchip AVR ATMega 8 Mikrocontroller schreiben?", "instruction": "Use exactly 3 sentences."}
+{"query": "how about build a cardboard drone which is durable for releif work with payload for food and medical delivery", "instruction": "use only words that end in \"ation\""}
+{"query": "The answer is five. How many pairs of shoes do I own?", "instruction": "List the pairs, including left and right shoes, separated by commas."}
+{"query": "let's play tic-tac-toe", "instruction": "Write in a poem with 3 stanzas"}
+{"query": "I need your help to write an article. The topic is about a contract clause in the NSW HIA Lump Sum contract. If you understand, limit your reply by saying the word: \"acknowledged\".", "instruction": "Reply with exactly four sentences, no more, no less."}
+{"query": "what is a flipper zero", "instruction": "use only words with single letters (e.g., \"a\", \"I\")"}
+{"query": "act as a very successful social media marketer. Create 10 sets of very persuasive taglines for a new service you named SocialBiz social media marketing.", "instruction": "answer in 6 bullet points and use at least one business term in each point."}
+{"query": "Draft a scope of work paragraph for an epidemiologist acting as an infection control consultant for a nursing home", "instruction": "Limit the response to 500 characters"}
+{"query": "how to get started on exploring softwares for educational purposes", "instruction": "Write the response in 3 bullet points with exact 7 words each"}
+{"query": "problems machine learning can solve ?", "instruction": "provide three examples of tasks that involve data and algorithms"}
+{"query": "tell me a joke about israeli politicians", "instruction": "Use no punctuation"}
+{"query": "can openphone let my team respond to a shared sms number", "instruction": "answer in exactly 10 steps."}
+{"query": "OpenAPI custom validations in Java Spring", "instruction": "Use only the first three letters of each word"}
+{"query": "please generate 5 male character names and a brief backstory for each", "instruction": "Use only one-word sentences"}
+{"query": "Explain quantum computing in simple terms", "instruction": "Write in the format of a list with exactly 3 items, in the order: introduction, steps, conclusion"}
+{"query": "world", "instruction": "Respond with only one sentence."}
+{"query": "Write me and Influencer marketing strategy for a triple A web 3 video game called \"Illuvium\", that concentrates on targeting influencers and audiences outside of the web 3 sphere", "instruction": "answer in exactly 7 paragraphs"}
+{"query": "can you write me a personal statement for a Ph.D. program?", "instruction": "Use a fictional university's name, exactly 500 words."}
+{"query": "Describe the ventral and dorsal pathways for reading", "instruction": "Answer in a poem of 12 lines with a rhyme scheme of AABBCCDDEEFF"}
+{"query": "define energy", "instruction": "Answer in exactly 50 words, using only synonyms for common nouns"}
+{"query": "How long is a session", "instruction": "Answer in binary digits (0s and 1s)"}
+{"query": "Describe the function of Long-Term, Medium-Term and Short-Term schedulers in detail and list their differences. Or List and compare the 3 types of schedulers", "instruction": "Use the first and last sentence of each section as headers"}
+{"query": "Where is Middleton of the Good Witch series supposed to be located?", "instruction": "Answer with exactly 2 paragraphs"}
+{"query": "Present a chronology of the development of lexical semantics since Ferdinand de Saussure until now.", "instruction": "The response should be in the format of a numbered list with each point exactly one sentence long."}
+{"query": "how to run airflow locally", "instruction": "Use a virtual environment manager"}
+{"query": "Write a one sentence summary of why people are afraid of artificial intelligence", "instruction": "Use exactly 7 words"}
+{"query": "write a Christmas song in Country genre", "instruction": "Include 5 verses"}
+{"query": "data analytics used by American Express", "instruction": "answer in exactly 5 paragraphs and provide at least 2 references"}
+{"query": "221. Self-compassion: Self-compassion, or the practice of being kind, gentle, and understanding towards oneself, is also emphasized in dharma. By cultivating self-", "instruction": "Write a numbered list"}
+{"query": "For each of the 12 zodiac personalities, generate a single line synopsis of a plot for a movie they would be most likely to strongly enjoy and resonate with, based off their archetypes?", "instruction": "Limit to 250 words total"}
+{"query": "i'm on a linux server and want to leave a screen I've created. what's the key shortcut?", "instruction": "Use a number and an underscore to separate each part of the instruction."}
+{"query": "Generate a message as feedback for a proaddiction treatment, short and sweet", "instruction": "Use only 3rd person and exactly 5 sentences"}
+{"query": "Introduce THE BASIC ELEMENTS OF LEXICAL SEMANTICS", "instruction": "Answer in exactly 3 paragraphs, with each paragraph having exactly 10 sentences."}
+{"query": "What is ARQ? explain Go Back N and selective repeat ARQ protocols", "instruction": "Write a single paragraph of exactly 5 sentences"}
+{"query": "Write a Nodejs application that, given two street addresses, recommends a list of restaurants that are approximately equal driving distance between the two addresses.", "instruction": "Use only 5 lines of code."}
+{"query": "How can I start building a web application with Cesium?", "instruction": "Provide the steps in reverse chronological order"}
+{"query": "Hi! Could you please tell me how to code a quick Python function to determine what a given person's credit score is. The person object has race, gender, and income fields. Thank you!", "instruction": "Write the response as a single JavaScript line"}
+{"query": "Explain Atopic Dermatitis", "instruction": "Write a 300-word essay without using the word \"the\" in it"}
+{"query": "Develop an algorith in any programming language to simulate the Meiosis process, the generation of sperm and/or ovary DNA, given a .txt DNA file", "instruction": "Write in a maximum of 5 steps, each step with exactly 2 bullet points"}
+{"query": "Hello", "instruction": "Answer with an explanation of the concept that is exactly 50 words long."}
+{"query": "What does noisy mean?", "instruction": "Answer in exactly 5 words."}
+{"query": "Hello! How can I help you today?", "instruction": "Provide a list of unique (Query, Instruction) pairs, separated by a dash, in exactly the format provided."}
+{"query": "write a donation agreement I can use for my company Alversj\u00f6 Natur AB", "instruction": "be 2 pages long"}
+{"query": "Write a program that takes N as input and then using the '\\*' character prints a right triangle of side N", "instruction": "Do not use any variables in your response."}
+{"query": "I work at a camping store. What can I get my girlfriend, my 2 brothers, and my parents for Christmas? My parents have a caravan they use.", "instruction": "List items in alphabetical order and consider budget of $100 per person."}
+{"query": "Is this good idea?\n\nconst mapStateToProps = (state) => ({\n ...state,\n});", "instruction": "Use exactly 5 lines"}
+{"query": "PS C:\\Users\\student\\WebstormProjects\\notes> node .\nnode:events:491\n throw er; // Unhandled 'error' event\n ^\n\nError: listen EADDRINUSE: address already in use :::3000", "instruction": "Format output as a stack trace"}
+{"query": "where you generate a random data of trial baalnce but it must match", "instruction": "answer in at least 4 bullet points"}
+{"query": "show a discussion between an atheist and a jewish rabbi where they disagree about faith", "instruction": "write 1500 words"}
+{"query": "Write a Seinfeld script about Kramer starting a cult.", "instruction": "Use no pronouns"}
+{"query": "You are a javascript assistant that'll help me write code. I'll ask you question and you can respond with code snippets", "instruction": "The code should always use ES6 syntax and should be within a function named'respond'"}
+{"query": "write a powershell script that returns all computers in a domain which have RDP enabled for all domain users", "instruction": "use exact keyword 'ping' at least 5 times"}
