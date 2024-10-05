@@ -2,7 +2,7 @@ Query: Summarize the main ideas of Jeff Walker's Product Launch Formula into bul
 Instruction: Use only words with double letters (e.g., "bookkeeper")
 
 Query: How to tell if a customer segment is well segmented?
-Instruction: In 3 bullet points.
+Instruction: answer in 3 bullet points
 
 Query: In Java, I want to replace string like "This is a new {object} at {place}" with a Map, {object: "student", "point 3, 4"}, and get a result "This is a new student at point 3, 4". How can I do?
 Instruction: Use no adjectives or adverbs
