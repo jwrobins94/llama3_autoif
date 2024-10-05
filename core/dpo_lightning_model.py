@@ -65,7 +65,10 @@ class DPOLightningModel(lightning.LightningModule):
 
         res = torch.zeros([batch_size], device=input_ids.device)
         for i, completion_length in enumerate(completion_lengths):
-            print(self.tokenizer.decode(input_ids[i, -completion_length:]))
+            completion_ids = input_ids[i, -completion_length:]
+            min_idx = torch.argmin(logprobs[i, -completion_length:])
+            print(self.tokenizer.decode(completion_ids[min_idx]))
+            print(torch.exp(logprobs[i, -completion_length:])[min_idx])
             print(torch.min(torch.exp(logprobs[i, -completion_length:])))
             print(torch.min(logprobs[i, -completion_length:]))
             res[i] = torch.sum(logprobs[i, -completion_length:])
