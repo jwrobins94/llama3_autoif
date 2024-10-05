@@ -51,7 +51,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
 
-    torch.distributed.init_process_group('nccl')
+    torch.distributed.init_process_group('nccl', rank=args.local_rank)
     if args.deepspeed:
         model = wrap_with_deepspeed_inference(model)
 
