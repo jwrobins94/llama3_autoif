@@ -3,7 +3,9 @@ from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from core.inference_utils import generate_completions, wrap_with_deepspeed_inference
+from core.inference_utils import generate_completions
+import glob
+from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -12,12 +14,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
+    parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
-    parser.add_argument(f'--deepspeed', default=False, action='store_true', help='Enables DeepSpeed Inference')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
+    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
     return parser.parse_args()
 
 
@@ -49,7 +52,8 @@ def evaluate(response: str) -> bool:
 ```
 
 The user will issue the following query: {query}
-Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}'''
+Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
+Do not comment your code.'''
 
 
 def construct_test_case_prompt(instruction: str) -> str:
@@ -77,56 +81,84 @@ if __name__ == '__main__':
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
 
-    if args.deepspeed:
-        model = wrap_with_deepspeed_inference(model)
-
     if torch.cuda.is_available():
-        model.to('cuda:0')
+        model.to(f'cuda:{args.local_rank}')
 
-    with open(args.output, 'w') as output_file:
-        for instruction_idx, instruction_w_query in enumerate(instructions_w_queries):
-            print(f'Processing instruction {instruction_idx + 1} of {len(instructions_w_queries)}.')
-            messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(**instruction_w_query)}] for _ in range(args.num_verifications)]
-            prompts = [
-                    tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    tokenize=False
-                ) for messages in messages_mat
-            ]
+    torch.distributed.init_process_group('nccl', rank=args.local_rank)
 
+    sampler = DistributedSampler(instructions_w_queries, shuffle=False)
+    dataloader = DataLoader(instructions_w_queries, batch_size=args.batch_size, sampler=sampler)
+
+    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
+        instruction_idx = 0
+        for instruction_w_query_batch in dataloader:
+            all_prompts = []
             fn_prefix = 'def evaluate(response: str) -> bool:' # start the function spec to help the model get started
-            for i, prompt in enumerate(prompts):
-                prompts[i] = prompt + f'```{fn_prefix}'
+            for query, instruction in zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction']):
+                instruction_idx += 1
 
-            completions = generate_completions(model, tokenizer, prompts, '```', args.max_tokens)
+                print(f'[{args.local_rank}] Processing instruction {instruction_idx}.')
+                messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(query, instruction)}] for _ in range(args.num_verifications)]
+                prompts = [
+                        tokenizer.apply_chat_template(
+                        messages,
+                        add_generation_prompt=True,
+                        tokenize=False
+                    ) for messages in messages_mat
+                ]
+
+                for i, prompt in enumerate(prompts):
+                    prompts[i] = prompt + f'```{fn_prefix}'
+                
+                all_prompts.extend(prompts)
+            
+            completions = generate_completions(model, tokenizer, all_prompts, '```', args.max_tokens)
             verified_completions = [fn_prefix + completion for completion in completions]
 
-            for i, completion in enumerate(completions):
-                messages_mat[i].append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
-                messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction_w_query['instruction'])})
-
-            prompts_2 = [
-                tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    tokenize=False
-                )
-                for messages in messages_mat
-            ]
             testcase_prefix = '{"response": "'
-            for i, prompt in enumerate(prompts_2):
-                prompts_2[i] = prompt + f'{testcase_prefix}'
-            completions = generate_completions(model, tokenizer, prompts_2, tokenizer.eos_token, args.max_tokens)
-            testcase_completions = [testcase_prefix + completion for completion in completions]
-        
-            obj = {
-                'query': instruction_w_query['query'],
-                'instruction': instruction_w_query['instruction'],
-                'verifiers': verified_completions,
-                'testcases': testcase_completions
-            }
-            output_file.write(json.dumps(obj))
-            output_file.write('\n')
-            output_file.flush()
+            all_prompts_2 = []
+            for group_idx, (query, instruction) in enumerate(zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction'])):
+                group_completions = completions[group_idx * args.num_verifications: (group_idx + 1) * args.num_verifications]
+                for i, completion in enumerate(group_completions):
+                    messages_mat[i].append({'role': 'assistant', 'content': f'```\n{fn_prefix}{completion}```'})
+                    messages_mat[i].append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
 
+                prompts_2 = [
+                    tokenizer.apply_chat_template(
+                        messages,
+                        add_generation_prompt=True,
+                        tokenize=False
+                    )
+                    for messages in messages_mat
+                ]
+                
+                for i, prompt in enumerate(prompts_2):
+                    prompts_2[i] = prompt + f'{testcase_prefix}'
+                all_prompts_2.extend(prompts_2)
+
+            completions = generate_completions(model, tokenizer, all_prompts_2, tokenizer.eos_token, args.max_tokens)
+            testcase_completions = [testcase_prefix + completion for completion in completions]
+            
+            for group_idx, (query, instruction) in enumerate(zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction'])):
+                obj = {
+                    'query': query,
+                    'instruction': instruction,
+                    'verifiers': verified_completions[group_idx * args.num_verifications: (group_idx + 1) * args.num_verifications],
+                    'testcases': testcase_completions[group_idx * args.num_verifications: (group_idx + 1) * args.num_verifications]
+                }
+                output_file.write(json.dumps(obj))
+                output_file.write('\n')
+                output_file.flush()
+
+    torch.distributed.barrier()
+
+    if args.local_rank == 0:
+        # merge results
+        all_results = []
+        for path in glob.glob(f'{args.output}-*.jsonl'):
+            with open(path) as f:
+                local_data = f.read()
+                all_results.append(local_data)
+        
+        with open(f'{args.output}.jsonl', 'w') as f:
+            f.write(''.join(all_results))

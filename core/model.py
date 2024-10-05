@@ -32,6 +32,7 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
     )
 
     if state_dict_path:
+        print(f'Loading state dict: {state_dict_path}')
         state_dict = load_state_dict(state_dict_path)
         pretrained_name = None # don't reload weights since we're going to overwrite them anyways
     else:
@@ -39,7 +40,25 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
         pretrained_name = model_name
 
     model = LlamaForCausalLM.from_pretrained(pretrained_name, config=model_config, token=hf_api_token,
-                                             attn_implementation="flash_attention_2",
+                                             torch_dtype=torch.bfloat16,
                                                 state_dict=state_dict)
     model.config.pad_token_id = tokenizer.pad_token_id
+
+    apply_activation_checkpointing(model)
     return model
+
+def apply_activation_checkpointing(model):
+    from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+        CheckpointImpl, apply_activation_checkpointing, checkpoint_wrapper
+    )
+    from transformers.models.llama.modeling_llama import LlamaDecoderLayer
+    import functools
+
+    check_fn = lambda submodule: isinstance(submodule, LlamaDecoderLayer)
+    wrapper = functools.partial(
+        checkpoint_wrapper,
+        checkpoint_impl=CheckpointImpl.NO_REENTRANT,
+    )
+    apply_activation_checkpointing(
+        model, checkpoint_wrapper_fn=wrapper, check_fn=check_fn
+    )

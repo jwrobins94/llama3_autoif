@@ -11,6 +11,7 @@ setup(
         'langdetect',
         'immutabledict',
         'deepspeed',
-        'flash_attn'
+        'lightning',
+        'wandb'
     ]
 )
