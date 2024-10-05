@@ -61,7 +61,7 @@ if __name__ == '__main__':
     queries = load_sharegpt_queries()
 
     start_ts = time.time()
-    with open(args.output, 'w') as f:
+    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as f:
         num_generated = 0
         while num_generated < args.limit:
             prompts = [base_prompt]*args.batch_size
