@@ -9,8 +9,7 @@ def extract_query(row) -> dict[str, str]:
         return {'query': ''}
     return {'query': value}
 
-def load_sharegpt_queries() -> list[str]:
-    # TODO allow picking the dataset from command line
+def load_sharegpt_queries(min_query_len: int = 5, max_query_len: int = 200) -> list[str]:
     data = load_dataset('anon8231489123/ShareGPT_Vicuna_unfiltered', data_files='ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json')
     data_train = data['train']
     data_train = data_train.map(
@@ -18,9 +17,6 @@ def load_sharegpt_queries() -> list[str]:
         batched=False,
         remove_columns=data_train.column_names,
         load_from_cache_file=False # the cache creates a lot of problems when debugging
-    ).filter(lambda row : 5 <= len(row['query']) <= 200)
+    ).filter(lambda row : min_query_len <= len(row['query']) <= max_query_len)
 
-    res = []
-    for row in data_train:
-        res.append(row['query'])
-    return res
+    return [row['query'] for row in data_train]
