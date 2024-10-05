@@ -46,11 +46,12 @@ if __name__ == '__main__':
     torch.distributed.init_process_group('nccl', rank=args.local_rank)
 
     sampler = DistributedSampler(all_instructions, shuffle=False)
-    dataloader = DataLoader(all_instructions, batch_size=args.batch_size, sampler=sampler)
+    dataloader = DataLoader(all_instructions, batch_size=args.batch_size, sampler=sampler, collate_fn=list)
 
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
         num_processed = 0
         for batch in dataloader:
+            print(batch)
             num_processed += len(batch['query'])
             print(f'[{args.local_rank}] Generating completions: {num_processed}')
             queries = batch['query']
