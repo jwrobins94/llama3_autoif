@@ -42,8 +42,6 @@ Each line should alternate between Query and Instruction.'''
 if __name__ == '__main__':
     args = parse_args()
 
-    torch.distributed.init_process_group('nccl')
-
     with open(args.input) as f:
         seed_instructions = f.read() # read as a whole
 
@@ -53,8 +51,8 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
 
+    torch.distributed.init_process_group('nccl')
     if args.deepspeed:
-        torch.distributed.init_process_group()
         model = wrap_with_deepspeed_inference(model)
 
     base_prompt = tokenizer.apply_chat_template(
