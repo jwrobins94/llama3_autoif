@@ -80,8 +80,8 @@ if __name__ == '__main__':
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as f:
         num_generated = 0
         for batch in dataloader:
-            num_generated += len(batch)
             prompts = batch['prompt']
+            num_generated += len(prompts)
             sampled_queries = batch['query']
             completions = generate_completions(model, tokenizer, prompts, '\n', args.tokens_per_completion)
             for query, completion in zip(sampled_queries, completions):
