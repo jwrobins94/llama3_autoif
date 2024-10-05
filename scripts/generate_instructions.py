@@ -45,8 +45,7 @@ if __name__ == '__main__':
 
     if args.deepspeed:
         model = wrap_with_deepspeed_inference(model)
-
-    if torch.cuda.is_available():
+    elif torch.cuda.is_available():
         model.to('cuda:0')
 
     base_prompt = tokenizer.apply_chat_template(
