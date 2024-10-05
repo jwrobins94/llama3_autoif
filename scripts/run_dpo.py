@@ -183,7 +183,7 @@ if __name__ == '__main__':
         tokenizer,
         args.kl_beta,
         args.lr,
-        len(dataloader),
+        len(dataloader) * args.epochs,
         args.warm_up_steps
     )
 
