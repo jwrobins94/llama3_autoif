@@ -34,7 +34,7 @@ def run_ifeval(model_name: str,
         batch_size=batch_size,
         apply_chat_template=True
     )
-    if not result['results']:
+    if result is None:
         # rank > 0
         return None, None 
     scores = result['results']['ifeval']
