@@ -87,7 +87,7 @@ if __name__ == '__main__':
     torch.distributed.init_process_group('nccl', rank=args.local_rank)
 
     sampler = DistributedSampler(instructions_w_queries, shuffle=False)
-    dataloader = DataLoader(instructions_w_queries, batch_size=args.batch_size, sampler=sampler) # TODO batch size
+    dataloader = DataLoader(instructions_w_queries, batch_size=args.batch_size, sampler=sampler)
 
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
         instruction_idx = 0
