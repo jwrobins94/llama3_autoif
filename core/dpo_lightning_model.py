@@ -106,6 +106,7 @@ class DPOLightningModel(lightning.LightningModule):
             losses[i] = -torch.nn.functional.logsigmoid(self.kl_beta * logprob_ratio_delta)
 
         print(losses)
+        print(f'batch size is {batch_size}')
         loss = torch.mean(losses)
         return loss
     
