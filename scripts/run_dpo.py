@@ -195,7 +195,7 @@ if __name__ == '__main__':
         devices='auto',
         max_epochs=args.epochs,
         accumulate_grad_batches=1, # TODO
-        precision='bf16-mixed', # TODO
+        #precision='float32', # TODO
         strategy='deepspeed_stage_2' if args.deepspeed else 'auto',
         logger=logger,
         log_every_n_steps=1,

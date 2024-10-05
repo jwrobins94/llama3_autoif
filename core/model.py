@@ -40,7 +40,7 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
         pretrained_name = model_name
 
     model = LlamaForCausalLM.from_pretrained(pretrained_name, config=model_config, token=hf_api_token,
-                                             attn_implementation="flash_attention_2",
+                                             #attn_implementation="flash_attention_2",
                                                 state_dict=state_dict)
     model.config.pad_token_id = tokenizer.pad_token_id
     return model
