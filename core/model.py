@@ -3,13 +3,11 @@ from transformers.models.llama.modeling_llama import LlamaForCausalLM
 import torch
 from typing import Optional
 
-# Keeping the scope small to start.
-# It is safe to include any models here that share a tokenizer with the Llama 3 series.
+# This list can safely be extended in the future to include any "Instruct" models from the Llama 3 series.
+# Non-instruct models are not trained for chat and hence cannot be used with our prompts.
 ALLOWED_MODELS = [
     'meta-llama/Llama-3.1-8B-Instruct',
-    'meta-llama/Llama-3.2-1B-Instruct',
-    'meta-llama/Llama-3.1-8B',
-    'meta-llama/Llama-3.2-1B'
+    'meta-llama/Llama-3.2-1B-Instruct'
 ]
 
 def load_state_dict(ckpt: str) -> dict[str, torch.Tensor]:

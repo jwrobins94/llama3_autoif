@@ -4,13 +4,14 @@ import argparse
 import torch
 import json
 from core.inference_utils import generate_completions
-import glob
 from torch.utils.data import DataLoader, DistributedSampler
+from core.data_utils import merge_outputs
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
+
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
@@ -18,9 +19,10 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
 
-    parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of instructions')
+    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 1_generate_instructions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
-    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
+
+    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
 
 
@@ -79,7 +81,7 @@ if __name__ == '__main__':
         instructions_w_queries = [json.loads(line) for line in f.read().splitlines()]
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
@@ -153,12 +155,4 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     if args.local_rank == 0:
-        # merge results
-        all_results = []
-        for path in glob.glob(f'{args.output}-*.jsonl'):
-            with open(path) as f:
-                local_data = f.read()
-                all_results.append(local_data)
-        
-        with open(f'{args.output}.jsonl', 'w') as f:
-            f.write(''.join(all_results))
+        merge_outputs(args.output)

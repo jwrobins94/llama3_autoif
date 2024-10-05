@@ -1,5 +1,7 @@
 from transformers import AutoTokenizer, PreTrainedTokenizerFast
 
+# We take the tokenizer from any Llama 3 Instruct model
+# model.py enforces that only matching models are loaded
 TOKENIZER_MODEL_ID = 'meta-llama/Llama-3.2-1B-Instruct'
 
 def load_tokenizer(hf_api_token: str):

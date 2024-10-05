@@ -4,25 +4,25 @@ import argparse
 import torch
 import json
 from core.inference_utils import generate_completions
-import glob
+from core.data_utils import merge_outputs
 from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
+
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
-
     parser.add_argument(f'--num-completions', type=int, required=True, help='Number of completions per instruction')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
-    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of filter_instructions.py')
+    parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 3_filter_instructions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final (instruction, verifiers, completions) tuples')
-    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
-    return parser.parse_args()
 
+    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
+    return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
     # this prompt is derived from the one in the paper
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         all_instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
@@ -83,13 +83,4 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     if args.local_rank == 0:
-        # merge results
-        all_results = []
-        for path in glob.glob(f'{args.output}-*.jsonl'):
-            with open(path) as f:
-                local_data = f.read()
-                all_results.append(local_data)
-        
-        with open(f'{args.output}.jsonl', 'w') as f:
-            f.write(''.join(all_results))
-
+        merge_outputs(args.output)

@@ -5,29 +5,31 @@ import argparse
 import torch
 import time
 from core.inference_utils import generate_completions
-from data.data_utils import load_sharegpt_queries
+from core.data_utils import load_sharegpt_queries, merge_outputs
 import random
 import json
-import glob
 from torch.utils.data import DataLoader, DistributedSampler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
+    
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--limit', type=int, required=True, help='Number of new instructions to generate')
     parser.add_argument(f'--tokens-per-completion', type=int, default=512, help='Max completion length')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
-    parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
+
+    parser.add_argument(f'--input', type=str, required=True, help='Path to a newline-delimited list of Query-Instruction pairs; see data/seed_instruction_pairs.txt for an example')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
-    parser.add_argument(f'--local_rank', type=int, required=False, default=0, help='GPU index')
+
+    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
 
     return parser.parse_args()
 
 def construct_prompt(seed_instructions_str: str) -> str:
-    # This prompt is largely copied from the source paper: https://arxiv.org/pdf/2406.13542v3
+    # This prompt is based heavily on the one provided in the source paper: https://arxiv.org/pdf/2406.13542v3
     return f'''You are an expert at writing instructions. Please provide instructions that meet
 the following requirements:
 - Instructions constrain the format but not style of the response
@@ -45,7 +47,7 @@ if __name__ == '__main__':
         seed_instructions = f.read() # read as a whole
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token) # TODO add support for state_dict
+    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
 
     if torch.cuda.is_available():
         model.to(f'cuda:{args.local_rank}')
@@ -94,14 +96,4 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     if args.local_rank == 0:
-        # merge results
-        all_results = []
-        for path in glob.glob(f'{args.output}-*.jsonl'):
-            with open(path) as f:
-                local_data = f.read()
-                all_results.append(local_data)
-        
-        with open(f'{args.output}.jsonl', 'w') as f:
-            f.write(''.join(all_results))
-
-        
+        merge_outputs(args.output)
