@@ -74,23 +74,23 @@ class DPOLightningModel(lightning.LightningModule):
             
             print()
             print('ref-chosen')
-            ref_logprobs_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
+            ref_logprobs_chosen = self._compute_logprobs(batch["input_ids_chosen"],
                                                        batch["attention_mask_chosen"],
                                                        self.ref_model)
             print()
             print('ref-rejected')
-            ref_logprobs_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
+            ref_logprobs_rejected = self._compute_logprobs(batch["input_ids_rejected"],
                                                        batch["attention_mask_rejected"],
                                                        self.ref_model)
         
         print()
         print('pi-chosen')
-        pi_logprobs_chosen = self._compute_logprob_sum(batch["input_ids_chosen"],
+        pi_logprobs_chosen = self._compute_logprobs(batch["input_ids_chosen"],
                                                     batch["attention_mask_chosen"],
                                                     self.model)
         print()
         print('pi-rejected')
-        pi_logprobs_rejected = self._compute_logprob_sum(batch["input_ids_rejected"],
+        pi_logprobs_rejected = self._compute_logprobs(batch["input_ids_rejected"],
                                                     batch["attention_mask_rejected"],
                                                     self.model)
         
