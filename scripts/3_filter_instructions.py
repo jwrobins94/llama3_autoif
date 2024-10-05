@@ -114,6 +114,10 @@ def passes_validation(query: str, instruction: str, verifiers: list[str], testca
 
 if __name__ == '__main__':
     args = parse_args()
+    proceed = input('This script executes model-generated Python code. Please confirm that you are running this script in a sandboxed environment. (y/N)')
+    if proceed != 'y':
+        print('Aborting.')
+        exit()
 
     with open(args.input) as f:
         orig_instances = [json.loads(line) for line in f.read().splitlines()]
