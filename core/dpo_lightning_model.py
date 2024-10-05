@@ -67,7 +67,7 @@ class DPOLightningModel(lightning.LightningModule):
         for i, completion_length in enumerate(completion_lengths):
             completion_ids = input_ids[i, -completion_length:]
             min_idx = torch.argmin(logprobs[i, -completion_length:])
-            print(self.tokenizer.decode(completion_ids[min_idx]))
+            print(f'"{self.tokenizer.decode(completion_ids[min_idx])}"')
             print(torch.exp(logprobs[i, -completion_length:])[min_idx])
             print(torch.min(torch.exp(logprobs[i, -completion_length:])))
             print(torch.min(logprobs[i, -completion_length:]))
