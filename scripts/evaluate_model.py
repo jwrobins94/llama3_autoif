@@ -33,7 +33,8 @@ if __name__ == '__main__':
         args.context_length,
         args.hf_api_token,
         args.limit or None,
-        load_state_dict(args.ckpt) if args.ckpt else None)
+        load_state_dict(args.ckpt) if args.ckpt else None
+    )
     if not scores:
         exit() # rank > 0
     print(scores)

@@ -16,6 +16,7 @@ def run_ifeval(model_name: str,
     # this download is needed for ifeval to run
     nltk.download('punkt_tab')
 
+    print(f'State dict: {state_dict}')
     result = simple_evaluate(
         model=HFLM(
             pretrained=model_name,
