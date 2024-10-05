@@ -15,7 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
     parser.add_argument(f'--limit', type=int, required=True, help='Number of new instructions to generate')
-    parser.add_argument(f'--tokens-per-completion', type=int, default=512, help='Number of new instructions to generate')
+    parser.add_argument(f'--tokens-per-completion', type=int, default=512, help='Max completion length')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
     parser.add_argument(f'--input', type=str, required=True, help='Path to a file containing a newline-delimited list of seed instructions')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
