@@ -1,4 +1,4 @@
-import lm_eval.api # for unknown reasons, this import must happen before other modules are loaded. TODO
+import lm_eval.api # TODO: for unknown reasons, this import must happen before other modules are loaded
 
 from core.model import load_model
 from core.tokenizer import load_tokenizer
