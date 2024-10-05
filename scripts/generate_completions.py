@@ -69,16 +69,16 @@ if __name__ == '__main__':
                     ) for messages in messages_mat
                 ]
                 all_prompts.extend(prompts)
-        completions = generate_completions(model, tokenizer, all_prompts, tokenizer.eos_token, args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts, tokenizer.eos_token, args.max_tokens)
 
-        completions_per_query = args.num_completions #* 2
-        
-        for i, elem in enumerate(batch):
-            res = dict(elem)
-            res['completions'] = completions[i * completions_per_query: (i+1) * completions_per_query]
-            output_file.write(json.dumps(res))
-            output_file.write('\n')
-            output_file.flush()
+            completions_per_query = args.num_completions #* 2
+            
+            for i, elem in enumerate(batch):
+                res = dict(elem)
+                res['completions'] = completions[i * completions_per_query: (i+1) * completions_per_query]
+                output_file.write(json.dumps(res))
+                output_file.write('\n')
+                output_file.flush()
     
     torch.distributed.barrier()
 
