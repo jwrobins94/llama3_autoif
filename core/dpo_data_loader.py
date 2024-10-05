@@ -1,6 +1,6 @@
 from transformers import PreTrainedTokenizerFast
 from torch.utils.data.dataloader import DataLoader
-from data.dpo_data_collator import DPODataCollator
+from core.dpo_data_collator import DPODataCollator
 
 def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
     rows_tokenized = []

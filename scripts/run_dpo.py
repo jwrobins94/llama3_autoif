@@ -5,7 +5,7 @@ from core.tokenizer import load_tokenizer
 from core.dpo_lightning_model import DPOLightningModel
 import argparse
 import json
-from data.dpo_data_loader import construct_dpo_dataloader
+from core.dpo_data_loader import construct_dpo_dataloader
 import lightning
 import torch
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
