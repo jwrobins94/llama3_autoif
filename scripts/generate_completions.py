@@ -51,14 +51,12 @@ if __name__ == '__main__':
     with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
         num_processed = 0
         for batch in dataloader:
-            print(batch)
-            num_processed += len(batch['query'])
+            num_processed += len(batch)
             print(f'[{args.local_rank}] Generating completions: {num_processed}')
-            queries = batch['query']
-            instructions = batch['instruction']
-
             all_prompts = []
-            for query, instruction in zip(queries, instructions):
+            for elem in batch:
+                query = elem['query']
+                instruction = elem['instruction']
                 messages_mat = []
                 for _ in range(args.num_completions):
                     messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction)}])
@@ -75,20 +73,10 @@ if __name__ == '__main__':
 
         completions_per_query = args.num_completions #* 2
         
-        for i, (query, instruction, verifiers, testcases) in zip(
-            batch['query'],
-            batch['instruction'],
-            batch['verifiers'],
-            batch['testcases']
-        ):
-
-            output_file.write(json.dumps({
-                'query': query,
-                'instruction': instruction,
-                'verifiers': verifiers,
-                'testcases': testcases,
-                'completions': completions[i * completions_per_query: (i+1) * completions_per_query]
-            }))
+        for i, elem in enumerate(batch):
+            res = dict(elem)
+            res['completions'] = completions[i * completions_per_query: (i+1) * completions_per_query]
+            output_file.write(json.dumps(res))
             output_file.write('\n')
             output_file.flush()
     
