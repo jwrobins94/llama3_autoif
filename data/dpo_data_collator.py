@@ -15,10 +15,8 @@ class DPODataCollator:
         for feature in features:
             for group_name in feature_groups.keys():
                 feature_groups[group_name].append({
-                    {
-                        "input_ids": feature[f"input_ids_{group_name}"],
-                        "attention_mask": feature[f"attention_mask_{group_name}"],
-                    }
+                    "input_ids": feature[f"input_ids_{group_name}"],
+                    "attention_mask": feature[f"attention_mask_{group_name}"],
                 })
 
         # tokenize each group and remap back to the original names
