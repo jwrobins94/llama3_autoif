@@ -26,6 +26,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 {'role': 'user', 'content': prompt},
                 {'role': 'assistant', 'content': rejected}
             ]
+            print(rejected)
             rejected_tokens = tokenizer.apply_chat_template(
                 messages_rejected,
                 tokenize=True,
