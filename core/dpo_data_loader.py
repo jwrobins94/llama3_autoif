@@ -16,7 +16,10 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             chosen_tokens = tokenizer.apply_chat_template(
                 messages_chosen,
                 tokenize=True,
-                return_dict=True
+                return_dict=True,
+
+                # set this so that the DPO loss excludes the EOT tokens
+                continue_final_message=True
             )
 
             messages_rejected = [
@@ -26,7 +29,9 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             rejected_tokens = tokenizer.apply_chat_template(
                 messages_rejected,
                 tokenize=True,
-                return_dict=True
+                return_dict=True,
+
+                continue_final_message=True # see comment above
             )
 
             messages_context = [
