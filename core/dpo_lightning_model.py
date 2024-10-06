@@ -106,8 +106,16 @@ class DPOLightningModel(lightning.LightningModule):
             dpo_accuracy = float(torch.mean(((pi_lps_chosen - ref_lps_chosen) - (pi_lps_rejected - ref_lps_rejected) > 0).float()).cpu().numpy())
             self.log('dpo_accuracy', dpo_accuracy, on_step=True, sync_dist=True, logger=True, prog_bar=True)
 
-            self.log('train_loss', loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
+            self.log('dpo_loss', loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
         
             self.log_learning_rate()
+
+        chosen_nll_loss = -torch.mean(pi_lps_chosen / completion_lengths_chosen)
+        with torch.no_grad():
+            self.log('chosen_nll_loss', chosen_nll_loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
+        
+        loss = loss + chosen_nll_loss
+
+        self.log('loss', loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
         return loss
     
