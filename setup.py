@@ -15,6 +15,9 @@ setup(
         'wandb',
         'accelerate',
         'jinja2>=3.1.0',
-        'huggingface_hub'
+        'huggingface_hub',
+
+        'ipykernel',
+        'numpy'
     ]
 )
