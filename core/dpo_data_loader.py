@@ -1,64 +1,68 @@
 from transformers import PreTrainedTokenizerFast
 from torch.utils.data.dataloader import DataLoader
 from core.dpo_data_collator import DPODataCollator
+from itertools import cycle
 
 def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
     rows_tokenized = []
     for row in rows:
         prompt = f'{row["query"]}\n{row["instruction"]}'
         
-        for chosen in row['chosen']:
-            for rejected in row['rejected']:
-                # all pairs
-                messages_chosen = [
-                    {'role': 'user', 'content': prompt},
-                    {'role': 'assistant', 'content': chosen}
-                ]
-                chosen_tokens = tokenizer.apply_chat_template(
-                    messages_chosen,
-                    tokenize=True,
-                    return_dict=True,
-                    max_length=context_length,
+        if len(row['chosen']) > len(row['rejected']):
+            zip_list = zip(row['chosen'], cycle(row['rejected']))
+        else:
+            zip_list = zip(cycle(row['chosen']), row['rejected'])
+        for chosen, rejected in zip_list:
+            # unlike the paper, we don't repeat any completions here and instead pick the shortest of the two
+            messages_chosen = [
+                {'role': 'user', 'content': prompt},
+                {'role': 'assistant', 'content': chosen}
+            ]
+            chosen_tokens = tokenizer.apply_chat_template(
+                messages_chosen,
+                tokenize=True,
+                return_dict=True,
+                max_length=context_length,
 
-                    # set this so that the DPO loss excludes the EOT tokens
-                    #continue_final_message=True
-                )
-                assert chosen_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(chosen_tokens['input_ids'][-1])
+                # set this so that the DPO loss excludes the EOT tokens
+                #continue_final_message=True
+            )
+            assert chosen_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(chosen_tokens['input_ids'][-1])
 
-                messages_rejected = [
-                    {'role': 'user', 'content': prompt},
-                    {'role': 'assistant', 'content': rejected}
-                ]
-                rejected_tokens = tokenizer.apply_chat_template(
-                    messages_rejected,
-                    tokenize=True,
-                    return_dict=True,
-                    max_length=context_length,
+            messages_rejected = [
+                {'role': 'user', 'content': prompt},
+                {'role': 'assistant', 'content': rejected}
+            ]
+            rejected_tokens = tokenizer.apply_chat_template(
+                messages_rejected,
+                tokenize=True,
+                return_dict=True,
+                max_length=context_length,
 
-                    #continue_final_message=True # see comment above
-                )
-                assert rejected_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(rejected_tokens['input_ids'][-1])
+                #continue_final_message=True # see comment above
+            )
+            assert rejected_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(rejected_tokens['input_ids'][-1])
 
-                messages_context = [
-                    {'role': 'user', 'content': prompt}
-                ]
-                context_tokens = tokenizer.apply_chat_template(
-                    messages_context,
-                    add_generation_prompt=True,
-                    tokenize=True,
-                    return_dict=True,
-                    max_length=context_length
-                )
-                
-                row_tokenized = {}
-                for k, v in chosen_tokens.items():
-                    row_tokenized[f'{k}_chosen'] = v
-                for k, v in rejected_tokens.items():
-                    row_tokenized[f'{k}_rejected'] = v
-                for k, v in context_tokens.items():
-                    row_tokenized[f'{k}_context'] = v
+            messages_context = [
+                {'role': 'user', 'content': prompt}
+            ]
+            context_tokens = tokenizer.apply_chat_template(
+                messages_context,
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
+                max_length=context_length
+            )
+            
+            row_tokenized = {}
+            for k, v in chosen_tokens.items():
+                row_tokenized[f'{k}_chosen'] = v
+            for k, v in rejected_tokens.items():
+                row_tokenized[f'{k}_rejected'] = v
+            for k, v in context_tokens.items():
+                row_tokenized[f'{k}_context'] = v
 
-                rows_tokenized.append(row_tokenized)
+            rows_tokenized.append(row_tokenized)
 
     collator = DPODataCollator(tokenizer, context_length)
     train_dataloader = DataLoader(rows_tokenized, batch_size=batch_size, shuffle=True, collate_fn=collator)
