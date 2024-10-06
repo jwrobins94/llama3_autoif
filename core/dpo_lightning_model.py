@@ -50,7 +50,7 @@ class DPOLightningModel(lightning.LightningModule):
                              attention_mask: torch.Tensor,
                              model: torch.nn.Module,
                              completion_lengths: torch.Tensor,
-                             omit_last_token: bool = True
+                             omit_last_token: bool = True # no DPO loss on the EOT token by default
         ) -> torch.Tensor:
         targets = input_ids[:, 1:].unsqueeze(-1)
 
