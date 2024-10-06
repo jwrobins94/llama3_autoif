@@ -122,24 +122,25 @@ if __name__ == '__main__':
     with open(args.input) as f:
         orig_instances = [json.loads(line) for line in f.read().splitlines()]
     
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(16) as executor:
         futures = []
         for instance in orig_instances:
             future = executor.submit(passes_validation, **instance)
             futures.append(future)
         
         filtered_instances = []
-        try:
-            for future in as_completed(futures, 5): # wait at most 30s
-                filtered_instance, ok = future.result(5)
-                
-                print(instance['instruction'], ok)
-                if ok:
-                    filtered_instances.append(filtered_instance)
-                print()
-        except TimeoutError:
-            print('Timed out after 30s.')
-            pass
+        
+        for future in as_completed(futures): # wait at most 30s
+            try:
+                filtered_instance, ok = future.result(1)
+            except TimeoutError:
+                print('Timed out.')
+                continue
+            
+            print(instance['instruction'], ok)
+            if ok:
+                filtered_instances.append(filtered_instance)
+            print()
         print('All tasked finished.')
         
         # kill straggler processes
