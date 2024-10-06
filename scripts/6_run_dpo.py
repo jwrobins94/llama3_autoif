@@ -26,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--beta1', type=float, default=0.9, help='AdamW beta1')
     parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
+    parser.add_argument('--include-chosen-nll-loss', action='store_true', help='If true, include an additional NLL loss term on the chosen response', default=True)
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 5_sort_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
@@ -56,7 +57,8 @@ if __name__ == '__main__':
         len(dataloader) * args.epochs,
         args.warm_up_steps,
         args.beta1,
-        args.beta2
+        args.beta2,
+        args.include_chosen_nll_loss
     )
 
     logger = WandbLogger()
