@@ -13,6 +13,8 @@ setup(
         'deepspeed',
         'lightning',
         'wandb',
-        'accelerate'
+        'accelerate',
+        'jinja2>=3.1.0',
+        'huggingface_hub'
     ]
 )
