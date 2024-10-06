@@ -4,7 +4,7 @@ setup(
     name='self_play_ifeval',
     version='0.1',
     packages=find_packages(),
-    install_requires=[ # TODO
+    install_requires=[
         'transformers',
         'torch',
         'lm_eval',
@@ -13,6 +13,10 @@ setup(
         'deepspeed',
         'lightning',
         'wandb',
-        'accelerate'
+        'accelerate',
+        'jinja2>=3.1.0',
+        'huggingface_hub',
+        'ipykernel',
+        'numpy'
     ]
 )

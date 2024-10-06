@@ -5,17 +5,23 @@ from transformers import PreTrainedTokenizerFast
 import nltk
 from typing import Optional
 
-@torch.no_grad()
-def run_ifeval(model_name: str,
-               tokenizer: PreTrainedTokenizerFast,
-               batch_size: int,
-               context_length: int,
-               hf_api_token: str,
-               limit: Optional[int] = None,
-               state_dict: Optional[dict[str, object]] = None) -> tuple[dict[str, object] | None, list[object] | None]:
-    # this download is needed for ifeval to run
-    nltk.download('punkt_tab')
-
+@torch.inference_mode()
+def run_eval(benchmark_name: str,
+             model_name: str,
+             tokenizer: PreTrainedTokenizerFast,
+             batch_size: int,
+             context_length: int,
+             hf_api_token: str,
+             limit: Optional[int] = None,
+             state_dict: Optional[dict[str, object]] = None) -> tuple[dict[str, object] | None, list[object] | None]:
+    if benchmark_name == 'ifeval':
+        # this download is needed for ifeval to run
+        nltk.download('punkt_tab')
+    elif benchmark_name == 'hellaswag':
+        pass
+    else:
+        return ValueError('Only ifeval and hellaswag have been tested')
+    
     model = HFLM(
             pretrained=model_name,
             tokenizer=tokenizer,
@@ -30,7 +36,7 @@ def run_ifeval(model_name: str,
         model.model.load_state_dict(state_dict)
     result = simple_evaluate(
         model=model,
-        tasks=['ifeval'],
+        tasks=[benchmark_name],
         cache_requests=True,
         log_samples=True,
         limit=limit,
@@ -41,7 +47,7 @@ def run_ifeval(model_name: str,
     if result is None:
         # rank > 0
         return None, None 
-    scores = result['results']['ifeval']
-    samples = result['samples']['ifeval']
+    scores = result['results'][benchmark_name]
+    samples = result['samples'][benchmark_name]
 
     return scores, samples
