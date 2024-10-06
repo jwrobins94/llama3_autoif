@@ -1,7 +1,7 @@
 import argparse
 import json
 from typing import Callable, Optional
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 import os
 import signal
@@ -121,13 +121,17 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         orig_instances = [json.loads(line) for line in f.read().splitlines()]
-
-    filtered_instances = []
-    with ProcessPoolExecutor() as executor:
+    
+    with ProcessPoolExecutor(16) as executor:
+        futures = []
         for instance in orig_instances:
             future = executor.submit(passes_validation, **instance)
+            futures.append(future)
+        
+        filtered_instances = []
+        for future in as_completed(futures, 30): # wait at most 30s
             try:
-                filtered_instance, ok = future.result(5.0) # spent at most 5 seconds per instance
+                filtered_instance, ok = future.result()
             except TimeoutError:
                 continue
             print(instance['instruction'], ok)
