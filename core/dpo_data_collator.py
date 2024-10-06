@@ -26,7 +26,6 @@ class DPODataCollator:
                 rows,
                 padding=True,
                 max_length=self.context_length,
-                pad_to_multiple_of=512, # pad to multiple of 512 to avoid recompilations with torch.compile
                 return_tensors='pt',
             )
             for k, v in batch.items():
