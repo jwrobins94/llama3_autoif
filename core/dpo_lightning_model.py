@@ -110,11 +110,11 @@ class DPOLightningModel(lightning.LightningModule):
         
             self.log_learning_rate()
 
-        chosen_nll_loss = -torch.sum(pi_lps_chosen) / torch.sum(completion_lengths_chosen)
-        with torch.no_grad():
-            self.log('chosen_nll_loss', chosen_nll_loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
+        #chosen_nll_loss = -torch.sum(pi_lps_chosen) / torch.sum(completion_lengths_chosen)
+        #with torch.no_grad():
+        #    self.log('chosen_nll_loss', chosen_nll_loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
         
-        loss = loss + chosen_nll_loss
+        #loss = loss + chosen_nll_loss
 
         self.log('loss', loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
         return loss
