@@ -130,8 +130,8 @@ if __name__ == '__main__':
         
         filtered_instances = []
 
-        # wait at most 30s
-        done, not_done = wait(futures, timeout=30, return_when=ALL_COMPLETED)
+        # wait at most 60s
+        done, not_done = wait(futures, timeout=60, return_when=ALL_COMPLETED)
         print('Done waiting.')
         
         for future in done:
