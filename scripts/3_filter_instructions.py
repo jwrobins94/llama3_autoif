@@ -129,15 +129,17 @@ if __name__ == '__main__':
             futures.append(future)
         
         filtered_instances = []
-        for future in as_completed(futures, 30): # wait at most 30s
-            try:
+        try:
+            for future in as_completed(futures, 30): # wait at most 30s
                 filtered_instance, ok = future.result()
-            except TimeoutError:
-                continue
-            print(instance['instruction'], ok)
-            if ok:
-                filtered_instances.append(filtered_instance)
-            print()
+                
+                print(instance['instruction'], ok)
+                if ok:
+                    filtered_instances.append(filtered_instance)
+                print()
+        except TimeoutError:
+            print('Timed out after 30s.')
+            pass
         
         # kill straggler processes
         for proc in multiprocessing.active_children():
