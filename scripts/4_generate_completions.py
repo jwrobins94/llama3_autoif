@@ -25,7 +25,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
-    # this prompt is derived from the one in the paper
     return f'''{query}
 {instruction}
 '''
