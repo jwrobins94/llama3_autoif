@@ -26,7 +26,7 @@ This approach simplifies the implementation while also encouraging the model to 
 {"query": "Find the coefficient of x^5 in the expansion of (x+(2/x))^11.\nJust show the equations, format them in markdown.", "instruction": "Use only mathematical symbols"}
 ```
 
-### NLL Loss on Chosen Completions
+### NLL Loss on chosen completions
 We add support for including an additional NLL loss on the chosen completions, as in [Iterative Reasoning Preference Optimization](https://arxiv.org/pdf/2404.19733). Enabling this loss reduces IFEval performance slightly, but helps to recover the degradation in Hellaswag performance.
 
 ### Policy visualization
@@ -35,3 +35,43 @@ We include a Jupyter notebook that can be used to visualize the difference in pe
 In the example below, we can see how the fine-tuned model is more likely to generate capitalized letters than the reference and is less likely to generate commas in accordance with the provided instruction.
 
 <img width="1270" alt="image" src="https://github.com/user-attachments/assets/0e0e0d9a-7e87-435b-84d4-f80e1ad0e5a2">
+
+## Usage
+
+### Setup
+This code has been tested on a LambdaLabs Ubuntu instance. It assumes that the user's machine has one or more bf16-compatible GPUs.
+
+Start by installing dependencies.
+
+`pip install -e .`
+
+Next, log into HuggingFace. This is needed to run evaluations since the evaluation package used `lm_eval` does not appear to accept an API token.
+
+`huggingface-cli login`
+
+You can now proceed to the next section.
+
+### Commands
+
+In the examples below, all synthetic data was generated using meta-llama/Llama-3.1-8B-Instruct on a single 8 x H100 instance. This ran in a couple hours on my machine and yielded just over 10k chosen-rejected pairs for DPO.
+
+Note that some of the completions are repeated; as in AutoIF, we generate chosen and rejected completions for each prompt, zip the two lists, and repeat the shorter of the two lists to ensure that all completions are used at least once. Based on some lightweight testing with the settings below, this strategy performs slightly better than zipping the two lists and dropping unmatched entries from the longer list.
+
+| Script    | Command |
+| -------- | ------- |
+| Run IFEval  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/ifeval.json --benchmark ifeval --ckpt <optional checkpoint for fine-tuned model>`|
+| Run Hellaswag  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/hellaswag.json --benchmark hellaswag --ckpt <optional checkpoint for fine-tuned model>`|
+| Generate instructions | `deepspeed --num_gpus 8 scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 32`   |
+| Generate verifiers and test cases    | `deepspeed --num_gpus 8 scripts/2_generate_instruction_artifacts.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/new_instruction_pairs.jsonl --output /tmp/verifiers --num-verifications 4`    |
+| Filter instructions    | `python3 scripts/3_filter_instructions.py --input /tmp/verifiers.jsonl --output /tmp/filtered_verifiers.jsonl`    |
+| Generate completions    | `deepspeed --num_gpus 8 scripts/4_generate_completions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/filtered_verifiers.jsonl --output /tmp/completions --num-completions 8 --batch-size 4`    |
+| Sort completions    | `python3 scripts/5_sort_completions.py --input /tmp/completions.jsonl --output /tmp/sorted_completions.jsonl`    |
+| Fine tune with DPO    | `python3 scripts/6_run_dpo.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --batch-size 4 --input /tmp/sorted_completions.jsonl --output /tmp/model.ckpt --lr 1e-6`    |
+
+### Results
+
+TODO
+
+### Visualization
+
+TODO
