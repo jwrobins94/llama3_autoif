@@ -26,6 +26,7 @@ if __name__ == '__main__':
     if args.benchmark not in ['hellaswag', 'ifeval']:
         raise ValueError('Only "hellaswag" and "ifeval" benchmarks are supported.')
     print('Consider running with "accelerate launch scripts/evaluate_model.py ..." if you have multiple GPUs.')
+    print('The lm_eval package does not appear to accept a HF API token. Run "huggingface-cli login" to cache your token locally before running this script.')
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
