@@ -122,7 +122,7 @@ if __name__ == '__main__':
     with open(args.input) as f:
         orig_instances = [json.loads(line) for line in f.read().splitlines()]
     
-    with ProcessPoolExecutor(16) as executor:
+    with ProcessPoolExecutor() as executor:
         futures = []
         for instance in orig_instances:
             future = executor.submit(passes_validation, **instance)
