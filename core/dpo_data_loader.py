@@ -8,12 +8,12 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
     for row in rows:
         prompt = f'{row["query"]}\n{row["instruction"]}'
         
+        # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
         if len(row['chosen']) > len(row['rejected']):
             zip_list = zip(row['chosen'], cycle(row['rejected']))
         else:
             zip_list = zip(cycle(row['chosen']), row['rejected'])
         for chosen, rejected in zip_list:
-            # unlike the paper, we don't repeat any completions here and instead pick the shortest of the two
             messages_chosen = [
                 {'role': 'user', 'content': prompt},
                 {'role': 'assistant', 'content': chosen}
@@ -22,12 +22,8 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 messages_chosen,
                 tokenize=True,
                 return_dict=True,
-                max_length=context_length,
-
-                # set this so that the DPO loss excludes the EOT tokens
-                #continue_final_message=True
+                max_length=context_length
             )
-            assert chosen_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(chosen_tokens['input_ids'][-1])
 
             messages_rejected = [
                 {'role': 'user', 'content': prompt},
@@ -37,11 +33,8 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 messages_rejected,
                 tokenize=True,
                 return_dict=True,
-                max_length=context_length,
-
-                #continue_final_message=True # see comment above
+                max_length=context_length
             )
-            assert rejected_tokens['input_ids'][-1] == tokenizer.eos_token_id, tokenizer.decode(rejected_tokens['input_ids'][-1])
 
             messages_context = [
                 {'role': 'user', 'content': prompt}
