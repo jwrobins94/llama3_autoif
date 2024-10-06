@@ -17,6 +17,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 messages_chosen,
                 tokenize=True,
                 return_dict=True,
+                max_length=context_length,
 
                 # set this so that the DPO loss excludes the EOT tokens
                 continue_final_message=True
@@ -31,6 +32,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 messages_rejected,
                 tokenize=True,
                 return_dict=True,
+                max_length=context_length,
 
                 continue_final_message=True # see comment above
             )
@@ -42,7 +44,8 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 messages_context,
                 add_generation_prompt=True,
                 tokenize=True,
-                return_dict=True
+                return_dict=True,
+                max_length=context_length
             )
             
             row_tokenized = {}
