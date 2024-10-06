@@ -18,24 +18,22 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 tokenize=True,
                 return_dict=True,
                 max_length=context_length,
-
-                # set this so that the DPO loss excludes the EOT tokens
-                continue_final_message=True
             )
+            assert chosen_tokens.endswith(tokenizer.eos_token_id)
+            chosen_tokens = chosen_tokens[:-1]
 
             messages_rejected = [
                 {'role': 'user', 'content': prompt},
                 {'role': 'assistant', 'content': rejected}
             ]
-            print(rejected)
             rejected_tokens = tokenizer.apply_chat_template(
                 messages_rejected,
                 tokenize=True,
                 return_dict=True,
-                max_length=context_length,
-
-                continue_final_message=True # see comment above
+                max_length=context_length
             )
+            assert rejected_tokens.endswith(tokenizer.eos_token_id)
+            rejected_tokens = rejected_tokens[:-1]
 
             messages_context = [
                 {'role': 'user', 'content': prompt}
