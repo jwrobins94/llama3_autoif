@@ -1,6 +1,11 @@
 # LLama3-AutoIF
 Minimal implementation of the paper "Self-play with Execution Feedback" using Llama 3 Instruct models.
 
+Reproducibility notes:
+1. All experiments were run on LambdaLabs using a single 8 x H100 instance.
+2. Dataset generation runs in a few hours for ~$100 in total cost. The data can be found on HuggingFace [here](https://huggingface.co/datasets/jwrobins94/llama3-autoif/tree/main).
+3. Fine-tuning for 1 epoch takes ~10 minutes for Llama 3.1 8B.
+
 ## Overview of AutoIF
 [AutoIF](https://arxiv.org/abs/2406.13542) is a method for generating synthetic instruction-following data. It was introduced by Alibaba's Qwen team in June 2024.
 
