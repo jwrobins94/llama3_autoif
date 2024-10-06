@@ -131,7 +131,7 @@ if __name__ == '__main__':
         filtered_instances = []
         try:
             for future in as_completed(futures, 5): # wait at most 30s
-                filtered_instance, ok = future.result()
+                filtered_instance, ok = future.result(5)
                 
                 print(instance['instruction'], ok)
                 if ok:
