@@ -138,10 +138,8 @@ if __name__ == '__main__':
                 print('Timed out.')
                 continue
             
-            print(instance['instruction'], ok)
             if ok:
                 filtered_instances.append(filtered_instance)
-            print()
         print('All tasked finished.')
 
         with open(args.output, 'w') as output_file:
