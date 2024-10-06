@@ -25,6 +25,7 @@ if __name__ == '__main__':
         instances = [json.loads(line) for line in f.read().splitlines()]
 
     sorted_instances = []
+    num_pairs = 0
     for instance in instances:
         # load completions
         completions = instance['completions']
@@ -51,6 +52,7 @@ if __name__ == '__main__':
                 chosen.append(completion)
             elif pass_rate == 0:
                 rejected.append(completion)
+        num_pairs += min(len(chosen), len(rejected))
         
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
         sorted_instances.append({
@@ -59,6 +61,7 @@ if __name__ == '__main__':
             'chosen': chosen,
             'rejected': rejected
         })
+    print(f'Generated {num_pairs} pairs.')
 
     with open(args.output, 'w') as output_file:
         for instance in sorted_instances:
