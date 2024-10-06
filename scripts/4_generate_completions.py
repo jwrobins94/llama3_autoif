@@ -57,21 +57,18 @@ if __name__ == '__main__':
             for elem in batch:
                 query = elem['query']
                 instruction = elem['instruction']
-                messages_mat = []
-                for _ in range(args.num_completions):
-                    messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction)}])
 
                 prompts = [
                         tokenizer.apply_chat_template(
-                        messages,
+                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction)}],
                         add_generation_prompt=True,
                         tokenize=False
-                    ) for messages in messages_mat
-                ]
+                    )
+                ] * args.num_completions
                 all_prompts.extend(prompts)
             completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
-            completions_per_query = args.num_completions #* 2
+            completions_per_query = args.num_completions
             
             for i, elem in enumerate(batch):
                 res = dict(elem)
