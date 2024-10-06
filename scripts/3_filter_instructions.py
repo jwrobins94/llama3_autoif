@@ -142,13 +142,15 @@ if __name__ == '__main__':
                 filtered_instances.append(filtered_instance)
             print()
         print('All tasked finished.')
+
+        with open(args.output, 'w') as output_file:
+            for instance in filtered_instances:
+                output_file.write(json.dumps(instance))
+                output_file.write('\n')
         
         # kill straggler processes
         for proc in multiprocessing.active_children():
             print(f'Killing stalled process: {proc.pid}')
             os.kill(proc.pid, signal.SIGTERM)
     
-    with open(args.output, 'w') as output_file:
-        for instance in filtered_instances:
-            output_file.write(json.dumps(instance))
-            output_file.write('\n')
+    
