@@ -131,6 +131,7 @@ if __name__ == '__main__':
         filtered_instances = []
         
         for future in as_completed(futures): # wait at most 30s
+            print('Task finished.')
             try:
                 filtered_instance, ok = future.result(1)
             except TimeoutError:
