@@ -90,17 +90,15 @@ Final results vs the baseline model are shown below:
 | Hellaswag: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 0.412 | TODO |
 
 Ablation on KL-beta (no extra NLL loss):
-| | KL-beta=0.01    | KL-beta=0.1 | KL-beta=1.0 |
-| -------- | ------- | ------- | ------- |
-| IFEval: Prompt-level, strict (acc) | 0.4676 | 0.5545 | 0.5083 |
-| IFEval: Instruction-level, strict (acc) | 0.6031 | 0.6726 | 0.6378 |
-| IFEval: Prompt-level, loose (acc) | 0.5064 | 0.5878 | 0.5415 |
-| IFEval: Instruction-level, loose (acc) | 0.6366 | 0.6966 | 0.6642 |
-| IFEval: average score | 0.5534 | 0.6278 | 0.5880 |
-| Hellaswag: Accuracy | 0.3891 | 0.4405 | 0.4456 |
-| Hellaswag: Accuracy (norm) | 0.4250 | 0.5276 | 0.5471 |
-
-(KL-beta=0.01 was an anomalous run; loss spiked on the final step)
+| | KL-beta=0.1 | KL-beta=1.0 |
+| -------- | ------- | ------- |
+| IFEval: Prompt-level, strict (acc) | 0.5545 | 0.5083 |
+| IFEval: Instruction-level, strict (acc) | 0.6726 | 0.6378 |
+| IFEval: Prompt-level, loose (acc) | 0.5878 | 0.5415 |
+| IFEval: Instruction-level, loose (acc) | 0.6966 | 0.6642 |
+| IFEval: average score | 0.6278 | 0.5880 |
+| Hellaswag: Accuracy | 0.4405 | 0.4456 |
+| Hellaswag: Accuracy (norm) | 0.5276 | 0.5471 |
 
 Ablation on extra NLL loss (KL-beta=0.1):
 | | No NLL loss    | With NLL loss |
@@ -131,13 +129,13 @@ Final results vs the baseline model are shown below:
 Ablation on KL-beta (no extra NLL loss):
 | | KL-beta=0.01    | KL-beta=0.1 | KL-beta=1.0 |
 | -------- | ------- | ------- | ------- |
-| IFEval: Prompt-level, strict (acc) | TODO | 0.7874 | 0.7615 |
-| IFEval: Instruction-level, strict (acc) | TODO | 0.8537 | 0.8261 |
-| IFEval: Prompt-level, loose (acc) | TODO | 0.8059 | 0.7837 |
-| IFEval: Instruction-level, loose (acc) | TODO | 0.8669 | 0.8453 |
-| IFEval: average score | TODO | 0.8284 | 0.8041 |
-| Hellaswag: Accuracy | TODO | 0.5706 | 0.5778 |
-| Hellaswag: Accuracy (norm) | TODO | 0.6585 | 0.7137 |
+| IFEval: Prompt-level, strict (acc) | 0.7874 | 0.7615 |
+| IFEval: Instruction-level, strict (acc) | 0.8537 | 0.8261 |
+| IFEval: Prompt-level, loose (acc) | 0.8059 | 0.7837 |
+| IFEval: Instruction-level, loose (acc) | 0.8669 | 0.8453 |
+| IFEval: average score | 0.8284 | 0.8041 |
+| Hellaswag: Accuracy | 0.5706 | 0.5778 |
+| Hellaswag: Accuracy (norm) | 0.6585 | 0.7137 |
 
 TODO loss spikes with the 8B model.... consider retraining with a lower learning rate!
 Likewise I need to rerun the KL=0.01 model for 1B. Something is off; just retrain it.
