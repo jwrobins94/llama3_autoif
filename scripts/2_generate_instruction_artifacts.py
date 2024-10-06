@@ -91,19 +91,12 @@ if __name__ == '__main__':
                 instruction_idx += 1
 
                 print(f'[{args.local_rank}] Processing instruction {instruction_idx}.')
-                messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(query, instruction)}] for _ in range(args.num_verifications)]
-                prompts = [
-                        tokenizer.apply_chat_template(
-                        messages,
+                prompt = tokenizer.apply_chat_template(
+                        [{'role': 'user', 'content': construct_verifier_prompt(query, instruction)}],
                         add_generation_prompt=True,
                         tokenize=False
-                    ) for messages in messages_mat
-                ]
-
-                for i, prompt in enumerate(prompts):
-                    prompts[i] = prompt + f'```{fn_prefix}'
-                
-                all_prompts.extend(prompts)
+                ) + f'```{fn_prefix}'
+                all_prompts.extend([prompt] * args.num_verifications)
             
             completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             verified_completions = [fn_prefix + completion for completion in completions]
