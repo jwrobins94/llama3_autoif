@@ -42,8 +42,8 @@ def load_model(model_name: str, tokenizer: PreTrainedTokenizerFast, context_leng
                                                 state_dict=state_dict)
     model.config.pad_token_id = tokenizer.pad_token_id
 
-    apply_activation_checkpointing(model)
     model = torch.compile(model)
+    apply_activation_checkpointing(model)
     return model
 
 def apply_activation_checkpointing(model):
