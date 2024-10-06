@@ -130,7 +130,7 @@ if __name__ == '__main__':
         
         filtered_instances = []
         try:
-            for future in as_completed(futures, 30): # wait at most 30s
+            for future in as_completed(futures, 5): # wait at most 30s
                 filtered_instance, ok = future.result()
                 
                 print(instance['instruction'], ok)
@@ -140,6 +140,7 @@ if __name__ == '__main__':
         except TimeoutError:
             print('Timed out after 30s.')
             pass
+        print('All tasked finished.')
         
         # kill straggler processes
         for proc in multiprocessing.active_children():
