@@ -31,6 +31,7 @@ if __name__ == '__main__':
 
     # Note: we delegate model loading to run_ifeval(...) to maintain compatibility with lm_eval's data parallelization
     scores, samples = run_eval(
+        args.benchmark,
         args.model,
         tokenizer,
         args.batch_size,
