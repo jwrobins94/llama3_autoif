@@ -78,7 +78,7 @@ if __name__ == '__main__':
                 res['completions'] = completions[i * completions_per_query: (i+1) * completions_per_query]
                 output_file.write(json.dumps(res))
                 output_file.write('\n')
-                output_file.flush()
+            output_file.flush()
     
     torch.distributed.barrier()
 

@@ -141,7 +141,7 @@ if __name__ == '__main__':
                 }
                 output_file.write(json.dumps(obj))
                 output_file.write('\n')
-                output_file.flush()
+            output_file.flush()
 
     torch.distributed.barrier()
 
