@@ -1,7 +1,7 @@
 import argparse
 import json
 from typing import Callable, Optional
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
 import multiprocessing
 import os
 import signal
@@ -121,26 +121,33 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         orig_instances = [json.loads(line) for line in f.read().splitlines()]
-
-    filtered_instances = []
-    with ProcessPoolExecutor() as executor:
+    
+    with ProcessPoolExecutor(16) as executor:
+        futures = []
         for instance in orig_instances:
             future = executor.submit(passes_validation, **instance)
-            try:
-                filtered_instance, ok = future.result(5.0) # spent at most 5 seconds per instance
-            except TimeoutError:
-                continue
-            print(instance['instruction'], ok)
+            futures.append(future)
+        
+        filtered_instances = []
+
+        # wait at most 60s
+        done, not_done = wait(futures, timeout=60, return_when=ALL_COMPLETED)
+        print('Done waiting.')
+        
+        for future in done:
+            filtered_instance, ok = future.result()
             if ok:
                 filtered_instances.append(filtered_instance)
-            print()
+        print('Writing output.')
+
+        with open(args.output, 'w') as output_file:
+            for instance in filtered_instances:
+                output_file.write(json.dumps(instance))
+                output_file.write('\n')
         
         # kill straggler processes
         for proc in multiprocessing.active_children():
             print(f'Killing stalled process: {proc.pid}')
             os.kill(proc.pid, signal.SIGTERM)
     
-    with open(args.output, 'w') as output_file:
-        for instance in filtered_instances:
-            output_file.write(json.dumps(instance))
-            output_file.write('\n')
+    

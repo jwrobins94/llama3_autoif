@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
+    parser.add_argument(f'--max-tokens', type=int, default=512, help='Max tokens per generation')
     parser.add_argument(f'--num-completions', type=int, required=True, help='Number of completions per instruction')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
@@ -25,7 +25,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
-    # this prompt is derived from the one in the paper
     return f'''{query}
 {instruction}
 '''
@@ -57,28 +56,25 @@ if __name__ == '__main__':
             for elem in batch:
                 query = elem['query']
                 instruction = elem['instruction']
-                messages_mat = []
-                for _ in range(args.num_completions):
-                    messages_mat.append([{'role': 'user', 'content': construction_generation_prompt(query, instruction)}])
 
                 prompts = [
                         tokenizer.apply_chat_template(
-                        messages,
+                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction)}],
                         add_generation_prompt=True,
                         tokenize=False
-                    ) for messages in messages_mat
-                ]
+                    )
+                ] * args.num_completions
                 all_prompts.extend(prompts)
-            completions = generate_completions(model, tokenizer, all_prompts, tokenizer.eos_token, args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
-            completions_per_query = args.num_completions #* 2
+            completions_per_query = args.num_completions
             
             for i, elem in enumerate(batch):
                 res = dict(elem)
                 res['completions'] = completions[i * completions_per_query: (i+1) * completions_per_query]
                 output_file.write(json.dumps(res))
                 output_file.write('\n')
-                output_file.flush()
+            output_file.flush()
     
     torch.distributed.barrier()
 

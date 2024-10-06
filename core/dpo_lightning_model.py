@@ -45,7 +45,11 @@ class DPOLightningModel(lightning.LightningModule):
         lr = optimizer.param_groups[0]['lr']
         self.log('lr', lr, on_step=True, logger=True, prog_bar=True, rank_zero_only=True)
 
-    def _compute_logprob_sum(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, model: torch.nn.Module, completion_lengths: torch.Tensor) -> torch.Tensor:
+    def _compute_logprob_sum(self,
+                             input_ids: torch.Tensor,
+                             attention_mask: torch.Tensor,
+                             model: torch.nn.Module,
+                             completion_lengths: torch.Tensor) -> torch.Tensor:
         targets = input_ids[:, 1:].unsqueeze(-1)
 
         logits = model(input_ids = input_ids,

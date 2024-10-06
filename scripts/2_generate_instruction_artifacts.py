@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
+    parser.add_argument(f'--max-tokens', type=int, default=512, help='Max tokens per generation')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
@@ -47,12 +47,6 @@ def evaluate(response: str) -> bool:
     return 2 <= count <= 5
 ```
 
-Here is an example of a good output for the instruction: answer in at most 27 characters
-```
-def evaluate(response: str) -> bool:
-    return len(response) <= 27
-```
-
 The user will issue the following query: {query}
 Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
 Do not comment your code.'''
@@ -62,16 +56,13 @@ def construct_test_case_prompt(instruction: str) -> str:
     # A common failure mode I've noticed is that the test cases will be overly simple.
     # As a result, we will have poor screening of verification functions and our actual model generations
     # will have a 100% pass or fail rate.
-    return f'''Now write 3 test cases for this verification function.
-Write one test case per line in JSON format:
-{{"response": "some response", "result": true or false}}
-
-Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
+    return f'''Here are 3 example test cases for the instruction: use the letter B between 2 and 5 times
 {{"response": "That's a great idea! You can buy a bar of soap at the local pharmacy.", "result": true}}
 {{"response": "Babbel is a popular app used to learn languages and is suitable for beginners. However, it does not yet support the Bemba language.", "result": false}}
-{{"response": "I recommend that you bring at least $200 in cash for your trip to Bulgaria, as many companies will not accept credit cards.", "result": true}}
 
-Now, write 3 test cases (one per line) for your instruction: {instruction}'''
+Now, write 2 test cases for your instruction: "{instruction}"
+Write one test case per line in JSON format:
+{{"response": "some response", "result": true or false}}'''
 
 
 if __name__ == '__main__':
@@ -114,7 +105,7 @@ if __name__ == '__main__':
                 
                 all_prompts.extend(prompts)
             
-            completions = generate_completions(model, tokenizer, all_prompts, '```', args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             verified_completions = [fn_prefix + completion for completion in completions]
 
             testcase_prefix = '{"response": "'
@@ -138,7 +129,7 @@ if __name__ == '__main__':
                     prompts_2[i] = prompt + f'{testcase_prefix}'
                 all_prompts_2.extend(prompts_2)
 
-            completions = generate_completions(model, tokenizer, all_prompts_2, tokenizer.eos_token, args.max_tokens)
+            completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             testcase_completions = [testcase_prefix + completion for completion in completions]
             
             for group_idx, (query, instruction) in enumerate(zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction'])):
@@ -150,7 +141,7 @@ if __name__ == '__main__':
                 }
                 output_file.write(json.dumps(obj))
                 output_file.write('\n')
-                output_file.flush()
+            output_file.flush()
 
     torch.distributed.barrier()
 
