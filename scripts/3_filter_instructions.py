@@ -1,7 +1,7 @@
 import argparse
 import json
 from typing import Callable, Optional
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
 import multiprocessing
 import os
 import signal
@@ -129,18 +129,16 @@ if __name__ == '__main__':
             futures.append(future)
         
         filtered_instances = []
+
+        # wait at most 30s
+        done, not_done = wait(futures, timeout=30, return_when=ALL_COMPLETED)
+        print('Done waiting.')
         
-        for future in as_completed(futures, 10):
-            print('Task finished.')
-            try:
-                filtered_instance, ok = future.result(1)
-            except TimeoutError:
-                print('Timed out.')
-                continue
-            
+        for future in done:
+            filtered_instance, ok = future.result()
             if ok:
                 filtered_instances.append(filtered_instance)
-        print('All tasked finished.')
+        print('Writing output.')
 
         with open(args.output, 'w') as output_file:
             for instance in filtered_instances:
