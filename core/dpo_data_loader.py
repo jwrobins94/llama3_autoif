@@ -19,7 +19,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 return_dict=True,
                 max_length=context_length,
             )
-            assert chosen_tokens.endswith(tokenizer.eos_token_id)
+            assert chosen_tokens[-1] == tokenizer.eos_token_id
             chosen_tokens = chosen_tokens[:-1]
 
             messages_rejected = [
@@ -32,7 +32,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
                 return_dict=True,
                 max_length=context_length
             )
-            assert rejected_tokens.endswith(tokenizer.eos_token_id)
+            assert rejected_tokens[-1] == tokenizer.eos_token_id
             rejected_tokens = rejected_tokens[:-1]
 
             messages_context = [
