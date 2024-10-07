@@ -12,9 +12,9 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
         
         # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
         if len(row['chosen']) > len(row['rejected']):
-            zip_list_old = zip(row['chosen'], cycle(row['rejected']))
+            zip_list_old = list(zip(row['chosen'], cycle(row['rejected'])))
         else:
-            zip_list_old = zip(cycle(row['chosen']), row['rejected'])
+            zip_list_old = list(zip(cycle(row['chosen']), row['rejected']))
 
         score_entries = []
         for completion, score in row['scores'].items():
