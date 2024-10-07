@@ -66,7 +66,14 @@ if __name__ == '__main__':
                     )
                 ] * args.num_completions
                 all_prompts.extend(prompts)
-            completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+            completions = generate_completions(
+                model,
+                tokenizer,
+                all_prompts,
+                [tokenizer.eos_token, '<|eom_id|>'],
+                args.max_tokens,
+                temperature=0.5
+            )
 
             completions_per_query = args.num_completions
             
