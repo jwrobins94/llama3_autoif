@@ -1,5 +1,5 @@
 # LLama3-AutoIF
-Minimal implementation of the paper "Self-play with Execution Feedback" using Llama 3 Instruct models.
+Minimal implementation of the paper [Self-play with Execution Feedback](https://arxiv.org/pdf/2406.13542v3) using Llama 3 Instruct models.
 
 Reproducibility notes:
 1. All experiments were run on LambdaLabs using a single 8 x H100 instance.
