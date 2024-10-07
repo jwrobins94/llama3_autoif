@@ -25,10 +25,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
-    res = f'''Answer the user's query while strictly following the instruction.
-Query: {query}
-Instruction: {instruction}'''
-    return res
+    return f'''{query}
+{instruction}
+'''
 
 if __name__ == '__main__':
     args = parse_args()
@@ -71,8 +70,7 @@ if __name__ == '__main__':
                 tokenizer,
                 all_prompts,
                 [tokenizer.eos_token, '<|eom_id|>'],
-                args.max_tokens,
-                top_p=0.9
+                args.max_tokens
             )
 
             completions_per_query = args.num_completions
