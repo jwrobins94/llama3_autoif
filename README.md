@@ -80,21 +80,21 @@ This strategy was evaluated by fine-tuning both meta-llama/Llama-3.2-1B-Instruct
 
 The data can be found on HuggingFace [here](https://huggingface.co/datasets/jwrobins94/llama3-autoif/tree/main).
 
-The learning rate and batch size were lightly tuned, resulting in values of 1e-6 for the 1B model and 1e-6 for the 8B model.
+The learning rate and batch size were lightly tuned, resulting in values of 1e-6 and 32 (4 per GPU) for both models.
 
 ### meta-llama/Llama-3.2-1B-Instruct
 
 Final results vs the baseline model are shown below:
-|  | Baseline    | Fine-tuned |
+|  | Baseline    | Fine-tuned (KL-beta=0.1) |
 | -------- | -------- | ------- |
-| IFEval: Prompt-level, strict (acc) | 0.4953 | TODO |
-| IFEval: Instruction-level, strict (acc) | 0.6223 | TODO |
-| IFEval: Prompt-level, loose (acc) | TODO | 0.5397 |
-| IFEval: Instruction-level, loose (acc) | 0.6606 | TODO |
-| IFEval: average score | 0.5794 | TODO |
-| IFEval: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 0.595 | TODO |
-| Hellaswag: Accuracy | 0.4460 | TODO |
-| Hellaswag: Accuracy (norm) | 0.5494 | TODO |
+| IFEval: Prompt-level, strict (acc) | 0.4953 | 0.5545 |
+| IFEval: Instruction-level, strict (acc) | 0.6223 | 0.6726 |
+| IFEval: Prompt-level, loose (acc) | 0.5397 | 0.5878|
+| IFEval: Instruction-level, loose (acc) | 0.6606 | 0.6966 |
+| IFEval: average score | 0.5794 | 0.6278 |
+| IFEval: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 0.595 | n/a |
+| Hellaswag: Accuracy | 0.4460 | 0.4405 |
+| Hellaswag: Accuracy (norm) | 0.5494 | 0.5276 |
 | Hellaswag: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 0.412 | TODO |
 
 Ablation on KL-beta (no extra NLL loss):
@@ -121,18 +121,17 @@ Ablation on extra NLL loss (KL-beta=0.1):
 
 ### meta-llama/Llama-3.1-8B-Instruct
 
-Final results vs the baseline model are shown below:
+Final results vs the baseline model are shown below (KL-beta=0.1):
 |  | Baseline    | Fine-tuned |
 | -------- | -------- | ------- |
-| IFEval: Prompt-level, strict (acc) | 0.7541 | TODO |
-| IFEval: Instruction-level, strict (acc) | 0.8249 | TODO |
-| IFEval: Prompt-level, loose (acc) | 0.7948 | TODO |
-| IFEval: Instruction-level, loose (acc) | 0.8561 | TODO |
-| IFEval: average score | 0.8075 | TODO |
-| IFEval: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | 0.804 | TODO |
-| Hellaswag: Accuracy | 0.5772 | TODO |
-| Hellaswag: Accuracy (norm) | 0.7107 | TODO |
-| Hellaswag: Meta reported result| n/a | n/a |
+| IFEval: Prompt-level, strict (acc) | 0.7541 | 0.7874 |
+| IFEval: Instruction-level, strict (acc) | 0.8249 | 0.8537 |
+| IFEval: Prompt-level, loose (acc) | 0.7948 | 0.8059 |
+| IFEval: Instruction-level, loose (acc) | 0.8561 | 0.8669 |
+| IFEval: average score | 0.8075 | 0.8284 |
+| IFEval: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | 0.804 | n/a |
+| Hellaswag: Accuracy | 0.5772 | 0.5706 |
+| Hellaswag: Accuracy (norm) | 0.7107 | 0.6585 |
 
 Ablation on KL-beta (no extra NLL loss):
 | | KL-beta=0.1 | KL-beta=1.0 |
