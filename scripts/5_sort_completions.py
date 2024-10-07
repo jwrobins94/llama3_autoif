@@ -48,9 +48,11 @@ if __name__ == '__main__':
                     num_passes[completion_idx] += 1        
         chosen = []
         rejected = []
+        scores = {}
         num_verifiers = len(instance['verifiers'])
         for completion_idx, completion in enumerate(completions):
             pass_rate = num_passes[completion_idx] / num_verifiers
+            scores[completion] = num_passes[completion_idx]
             print(f'Pass rate: {pass_rate}')
             if pass_rate >= 0.5:
                 chosen.append(completion)
@@ -69,7 +71,8 @@ if __name__ == '__main__':
             'query': instance['query'],
             'instruction': instance['instruction'],
             'chosen': chosen,
-            'rejected': rejected
+            'rejected': rejected,
+            'scores': scores
         })
     print(f'Processed {len(instances)} instances.')
     print(f'Generated {num_pairs} pairs, {num_unique_completions} unique completions, sourced from {num_unique_prompts} unique instances.')
