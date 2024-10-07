@@ -31,7 +31,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             eligible = [x for x in eligible if usage_counts.get(x[1], 0) == min_usage] # filter to min usage
             if not eligible:
                 continue
-            rejected = random.choice(eligible) # pick a random one
+            rejected = random.choice(eligible)[1] # pick a random one
             usage_counts[rejected] = usage_counts.get(rejected, 0) + 1
             zip_list.append((chosen, rejected))
 
