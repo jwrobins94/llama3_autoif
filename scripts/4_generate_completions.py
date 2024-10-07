@@ -28,8 +28,6 @@ def construction_generation_prompt(query: str, instruction: str) -> str:
     res = f'''Answer the user's query while strictly following the instruction.
 Query: {query}
 Instruction: {instruction}'''
-    for i, verifier in enumerate(verifiers):
-        res += f'\nVerifier {i + 1}:\n```\n{verifier}\n```'
     return res
 
 if __name__ == '__main__':
