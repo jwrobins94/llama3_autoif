@@ -37,7 +37,10 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             usage_counts[rejected] = usage_counts.get(rejected, 0) + 1
             zip_list.append((chosen, rejected))
         
-        assert len(zip_list) >= len(zip_list_old)
+        if not (len(zip_list) >= len(zip_list_old)):
+            print(zip_list_old)
+            print(zip_list)
+            raise ValueError('')
 
 
         for chosen, rejected in zip_list:
