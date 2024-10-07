@@ -2,17 +2,41 @@ from transformers import PreTrainedTokenizerFast
 from torch.utils.data.dataloader import DataLoader
 from core.dpo_data_collator import DPODataCollator
 from itertools import cycle
+import random
 
 def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
     rows_tokenized = []
+    random.seed(1234)
     for row in rows:
         prompt = f'{row["query"]}\n{row["instruction"]}'
         
         # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
-        if len(row['chosen']) > len(row['rejected']):
-            zip_list = zip(row['chosen'], cycle(row['rejected']))
-        else:
-            zip_list = zip(cycle(row['chosen']), row['rejected'])
+        #if len(row['chosen']) > len(row['rejected']):
+        #    zip_list = zip(row['chosen'], cycle(row['rejected']))
+        #else:
+        #    zip_list = zip(cycle(row['chosen']), row['rejected'])
+
+        score_entries = []
+        for completion, score in rows['scores'].items():
+            score_entries.append((score, completion))
+        score_entries.sort()
+
+        zip_list = []
+        usage_counts = {}
+        for score, chosen in score_entries:
+            eligible = [x for x in score_entries if x[0] < score] # find everything with a lower score
+            if not eligible:
+                continue
+            min_usage = min((usage_counts.get(x[1], 0) for x in eligible)) # compute min usage across those
+            eligible = [x for x in eligible if usage_counts.get(x[1], 0) == min_usage] # filter to min usage
+            if not eligible:
+                continue
+            rejected = random.choice(eligible) # pick a random one
+            zip_list.append((chosen, rejected))
+
+            
+
+
         for chosen, rejected in zip_list:
             messages_chosen = [
                 {'role': 'user', 'content': prompt},
