@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
     return f'''{query}
-{instruction}
+Your response must strictly follow this instruction: {instruction}
 '''
 
 if __name__ == '__main__':
