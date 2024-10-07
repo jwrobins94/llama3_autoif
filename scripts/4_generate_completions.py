@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 all_prompts,
                 [tokenizer.eos_token, '<|eom_id|>'],
                 args.max_tokens,
-                temperature=0.5
+                top_p=0.9
             )
 
             completions_per_query = args.num_completions
