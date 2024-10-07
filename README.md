@@ -90,8 +90,8 @@ Final results vs the baseline model are shown below:
 | IFEval: Prompt-level, strict (acc) | 0.4953 | 0.5545 |
 | IFEval: Instruction-level, strict (acc) | 0.6223 | 0.6726 |
 | IFEval: Prompt-level, loose (acc) | 0.5397 | 0.5878|
-| IFEval: Instruction-level, loose (acc) | 0.6606 | 0.6966 |
-| IFEval: average score | 0.5794 | 0.6278 |
+| IFEval: Instruction-level, loose (acc) | 0.6618 | 0.6966 |
+| IFEval: average score | 0.5797 | 0.6278 |
 | IFEval: [Meta reported result](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | 0.595 | n/a |
 | Hellaswag: Accuracy | 0.4460 | 0.4405 |
 | Hellaswag: Accuracy (norm) | 0.5494 | 0.5276 |
