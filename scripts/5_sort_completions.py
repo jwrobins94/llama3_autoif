@@ -28,6 +28,8 @@ if __name__ == '__main__':
     num_pairs = 0
     num_unique_completions = 0
     num_unique_prompts = 0
+    num_chosen_completions = 0
+    num_rejected_completions = 0
     for instance in instances:
         # load completions
         completions = instance['completions']
@@ -59,6 +61,8 @@ if __name__ == '__main__':
             num_pairs += max(len(chosen), len(rejected))
             num_unique_completions += len(chosen) + len(rejected)
             num_unique_prompts += 1
+        num_chosen_completions += len(chosen)
+        num_rejected_completions += len(rejected)
         
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
         sorted_instances.append({
@@ -69,6 +73,8 @@ if __name__ == '__main__':
         })
     print(f'Processed {len(instances)} instances.')
     print(f'Generated {num_pairs} pairs, {num_unique_completions} unique completions, sourced from {num_unique_prompts} unique instances.')
+    print(f'Chosen completions: {num_chosen_completions}')
+    print(f'Rejected completions: {num_rejected_completions}')
 
     with open(args.output, 'w') as output_file:
         for instance in sorted_instances:
