@@ -23,7 +23,6 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
 
         zip_list = []
         usage_counts = {}
-        print(score_entries)
         for score, chosen in score_entries:
             eligible = [x for x in score_entries if x[0] < score] # find everything with a lower score
             if not eligible:
@@ -38,6 +37,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             zip_list.append((chosen, rejected))
         
         if not (len(zip_list) >= len(zip_list_old)):
+            print(row)
             print(zip_list_old)
             print(zip_list)
             raise ValueError('')
