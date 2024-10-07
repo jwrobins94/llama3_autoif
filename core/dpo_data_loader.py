@@ -17,7 +17,7 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
         #    zip_list = zip(cycle(row['chosen']), row['rejected'])
 
         score_entries = []
-        for completion, score in rows['scores'].items():
+        for completion, score in row['scores'].items():
             score_entries.append((score, completion))
         score_entries.sort()
 
