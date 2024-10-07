@@ -32,9 +32,8 @@ def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict
             if not eligible:
                 continue
             rejected = random.choice(eligible) # pick a random one
+            usage_counts[rejected] = usage_counts.get(rejected, 0) + 1
             zip_list.append((chosen, rejected))
-
-            
 
 
         for chosen, rejected in zip_list:
