@@ -24,11 +24,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
     
-def construction_generation_prompt(query: str, instruction: str, verifiers: list[str]) -> str:
-    res = f'''{query}
-Strictly follow this instruction: {instruction}
-
-Your response will be verified using the following Python functions:'''
+def construction_generation_prompt(query: str, instruction: str) -> str:
+    res = f'''Answer the user's query while strictly following the instruction.
+Query: {query}
+Instruction: {instruction}'''
     for i, verifier in enumerate(verifiers):
         res += f'\nVerifier {i + 1}:\n```\n{verifier}\n```'
     return res
@@ -60,11 +59,10 @@ if __name__ == '__main__':
             for elem in batch:
                 query = elem['query']
                 instruction = elem['instruction']
-                verifiers = elem['verifiers']
 
                 prompts = [
                         tokenizer.apply_chat_template(
-                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction, verifiers)}],
+                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction)}],
                         add_generation_prompt=True,
                         tokenize=False
                     )
