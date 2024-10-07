@@ -54,9 +54,11 @@ if __name__ == '__main__':
                 chosen.append(completion)
             elif pass_rate == 0:
                 rejected.append(completion)
-        num_pairs += max(len(chosen), len(rejected)) * (1 if min(len(chosen), len(rejected)) > 0 else 0)
-        num_unique_completions += len(chosen) + len(rejected)
-        num_unique_prompts += 1 if min(len(chosen), len(rejected)) > 0 else 0
+        
+        if min(len(chosen), len(rejected)) > 0:
+            num_pairs += max(len(chosen), len(rejected))
+            num_unique_completions += len(chosen) + len(rejected)
+            num_unique_prompts += 1
         
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
         sorted_instances.append({
