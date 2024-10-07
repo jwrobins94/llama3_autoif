@@ -26,6 +26,10 @@ if __name__ == '__main__':
 
     sorted_instances = []
     num_pairs = 0
+    num_unique_completions = 0
+    num_unique_prompts = 0
+    num_chosen_completions = 0
+    num_rejected_completions = 0
     for instance in instances:
         # load completions
         completions = instance['completions']
@@ -44,24 +48,36 @@ if __name__ == '__main__':
                     num_passes[completion_idx] += 1        
         chosen = []
         rejected = []
+        scores = {}
         num_verifiers = len(instance['verifiers'])
         for completion_idx, completion in enumerate(completions):
             pass_rate = num_passes[completion_idx] / num_verifiers
+            scores[completion] = num_passes[completion_idx]
             print(f'Pass rate: {pass_rate}')
             if pass_rate >= 0.5:
                 chosen.append(completion)
             elif pass_rate == 0:
                 rejected.append(completion)
-        num_pairs += min(len(chosen), len(rejected))
+        
+        if min(len(chosen), len(rejected)) > 0:
+            num_pairs += max(len(chosen), len(rejected))
+            num_unique_completions += len(chosen) + len(rejected)
+            num_unique_prompts += 1
+        num_chosen_completions += len(chosen)
+        num_rejected_completions += len(rejected)
         
         print(f'Writing out instance with {len(chosen)} chosen and {len(rejected)} rejected completions.')
         sorted_instances.append({
             'query': instance['query'],
             'instruction': instance['instruction'],
             'chosen': chosen,
-            'rejected': rejected
+            'rejected': rejected,
+            'scores': scores
         })
-    print(f'Generated {num_pairs} pairs.')
+    print(f'Processed {len(instances)} instances.')
+    print(f'Generated {num_pairs} pairs, {num_unique_completions} unique completions, sourced from {num_unique_prompts} unique instances.')
+    print(f'Chosen completions: {num_chosen_completions}')
+    print(f'Rejected completions: {num_rejected_completions}')
 
     with open(args.output, 'w') as output_file:
         for instance in sorted_instances:
