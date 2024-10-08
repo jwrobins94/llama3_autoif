@@ -39,7 +39,8 @@ Here are some examples of instructions we need:
 {seed_instructions_str}
 
 Provide a list of unique (Query, Instruction) pairs that follow the same style of the examples.
-The instruction should not respond to the query. It should extend the query with one or more verifiable constraints.
+The instruction should not respond to the query. It should extend the query with one or more unambiguous constraints.
+For each instruction, it should be possible to write a small Python function to check whether a response adheres to the instruction exactly.
 Each line should alternate between Query and Instruction.'''
 
 if __name__ == '__main__':
