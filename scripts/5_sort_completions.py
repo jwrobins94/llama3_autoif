@@ -70,6 +70,7 @@ if __name__ == '__main__':
         sorted_instances.append({
             'query': instance['query'],
             'instruction': instance['instruction'],
+            'verifiers': instance['verifiers'],
             'chosen': chosen,
             'rejected': rejected,
             'scores': scores
