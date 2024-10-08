@@ -3,16 +3,25 @@ from torch.utils.data.dataloader import DataLoader
 from core.dpo_data_collator import DPODataCollator
 from itertools import cycle
 
-def construct_dpo_dataloader(tokenizer: PreTrainedTokenizerFast, rows: list[dict[str, object]], context_length: int, batch_size: int) -> DataLoader:
+def construct_dpo_dataloader(
+        tokenizer: PreTrainedTokenizerFast,
+        rows: list[dict[str, object]],
+        context_length: int,
+        batch_size: int,
+        no_loop: bool
+    ) -> DataLoader:
     rows_tokenized = []
     for row in rows:
         prompt = f'{row["query"]}\n{row["instruction"]}'
         
-        # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
-        if len(row['chosen']) > len(row['rejected']):
-            zip_list = zip(row['chosen'], cycle(row['rejected']))
+        if no_loop:
+            zip_list = zip(row['chosen'], row['rejected'])
         else:
-            zip_list = zip(cycle(row['chosen']), row['rejected'])
+            # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
+            if len(row['chosen']) > len(row['rejected']):
+                zip_list = zip(row['chosen'], cycle(row['rejected']))
+            else:
+                zip_list = zip(cycle(row['chosen']), row['rejected'])
         for chosen, rejected in zip_list:
             messages_chosen = [
                 {'role': 'user', 'content': prompt},
