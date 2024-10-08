@@ -5,8 +5,9 @@ import re
 HH_DELIMITERS = ["\n\nHuman: ", "\n\nAssistant: "]
 HH_PATTERN = '|'.join(map(re.escape, HH_DELIMITERS))
 
-def extract_query_hh(s: str) -> str:
-    return re.split(HH_PATTERN, s, maxsplit=2)[1]
+def extract_query_hh(row: str) -> str:
+    query = re.split(HH_PATTERN, row['chosen'], maxsplit=2)[1]
+    return {'query': query}
 
 def load_hh_queries(min_query_len: int = 5, max_query_len: int = 200) -> list[str]:
     data_train = load_dataset("Anthropic/hh-rlhf", data_dir="helpful-base")['train']
