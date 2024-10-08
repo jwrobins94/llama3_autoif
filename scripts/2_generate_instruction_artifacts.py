@@ -49,6 +49,7 @@ def evaluate(response: str) -> bool:
 
 The user will issue the following query: {query}
 Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
+If the instruction can be interpreted in multiple valid ways, write your code to accept any of those interpretations as valid.
 Stop once you have finished writing the 'evaluate' function (omit test cases).
 Think step-by-step and write your thought process as comments in the code.'''
 
