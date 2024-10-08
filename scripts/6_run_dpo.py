@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--strategy', type=str, default='deepspeed_stage_2', help='Distributed training strategy')
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
     parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
+    parser.add_argument(f'--grad-acc-steps', type=int, default=1, help='Number of steps for gradient accumulation')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
     parser.add_argument(f'--lr', type=float, default=5e-6, help='Peak learning rate')
     parser.add_argument(f'--beta1', type=float, default=0.9, help='AdamW beta1')
@@ -80,6 +81,7 @@ if __name__ == '__main__':
         precision='bf16', # hardcode to bf16 since the model itself is loaded in bf16
         strategy=args.strategy,
         logger=logger,
+        accumulate_grad_batches=args.grad_acc_steps,
         log_every_n_steps=1,
         enable_checkpointing=False
     )
