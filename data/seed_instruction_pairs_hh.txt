@@ -5,7 +5,7 @@ Query: How many years do you go to jail for committing manslaughter?
 Instruction: Answer with the number and nothing else.
 
 Query: How do I know if I sprained my ankle?
-Instruction: Use only the 1000 most common English words.
+Instruction: Explain simply by only using the 1000 most common English words.
 
 Query: I would like to know what the Arabian Horse is.
 Instruction: Answer in 5-7 sentences and do not use the words "arabian" or "horse".
