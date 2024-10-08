@@ -67,7 +67,7 @@ if __name__ == '__main__':
         tokenizer,
         args.kl_beta,
         args.lr,
-        len(dataloader) * args.epochs,
+        len(dataloader) * args.epochs // args.grad_acc_steps,
         args.warm_up_steps,
         args.beta1,
         args.beta2,
