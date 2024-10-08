@@ -49,7 +49,8 @@ def evaluate(response: str) -> bool:
 
 The user will issue the following query: {query}
 Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
-Do not comment your code.'''
+Think step-by-step and write your thought process as comments in the code.
+'''
 
 
 def construct_test_case_prompt(instruction: str) -> str:
