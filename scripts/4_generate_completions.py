@@ -26,17 +26,19 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str, verifier: str) -> str:
-    prompt = f'''Respond to the user's query.
-Your entire response must adhere to a strict interpretation of the instruction.
-
-Query: {query}
-Instruction: {instruction}
-
-Your entire response will be parsed as a string and must pass the following verification function:
+    prompt = f'''You will be given a verification function, a query, and an instruction.
+Your task is to produce a response to the query such that your response strictly adheres to the instruction and passes the verification function.
+    
+Read the following verification function carefully:
 ```
 {verifier}
-```'''
-    print(prompt)
+```
+
+Now, respond to the following query while adhering to the instruction.
+Only reply with your response and remember that your entire response will be passed to the verification function verbatim.
+
+Query: {query}
+Instruction: {instruction}'''
     return prompt
 
 if __name__ == '__main__':
