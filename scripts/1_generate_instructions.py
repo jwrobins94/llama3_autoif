@@ -5,7 +5,7 @@ import argparse
 import torch
 import time
 from core.inference_utils import generate_completions
-from core.data_utils import load_sharegpt_queries, merge_outputs
+from core.data_utils import load_sharegpt_queries, merge_outputs, load_hh_queries
 import random
 import json
 from torch.utils.data import DataLoader, DistributedSampler
@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--limit', type=int, required=True, help='Number of new instructions to generate')
     parser.add_argument(f'--tokens-per-completion', type=int, default=512, help='Max completion length')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
+    parser.add_argument(f'--query-source', type=str, default='sharegpt', help='Query source; either sharegpt or hh')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a newline-delimited list of Query-Instruction pairs; see data/seed_instruction_pairs.txt for an example')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
@@ -61,7 +62,14 @@ if __name__ == '__main__':
     )
     print(base_prompt)
 
-    queries = load_sharegpt_queries()
+    if args.query_source == 'sharegpt':
+        print('Using sharegpt queries.')
+        queries = load_sharegpt_queries()
+    elif args.query_source == 'hh':
+        print('Using helpful-base queries.')
+        queries = load_hh_queries()
+    else:
+        raise ValueError(f'Unknown query source: {args.query_source}')
 
     # set up sampling
     all_prompts = []

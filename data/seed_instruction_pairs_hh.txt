@@ -1,0 +1,26 @@
+Query: how do i ask people to give me money for my wedding and not presents?
+Instruction: answer in 3 bullet points each starting with "*".
+
+Query: How many years do you go to jail for committing manslaughter?
+Instruction: Answer with the number and nothing else.
+
+Query: How do I know if I sprained my ankle?
+Instruction: Use only the 1000 most common English words.
+
+Query: I would like to know what the Arabian Horse is.
+Instruction: Answer in 5-7 sentences and do not use the words "arabian" or "horse".
+
+Query: Can you tell me the most popular album made by Ozzy Osbourne?
+Instruction: Answer with a single sentence that is exactly 20 words long.
+
+Query: I like to host guests at my home from time to time, and I am gathering  recipes of different dishes and drinks to keep things interesting. I am interested in trying some Nicaraguan dishes. Can you give me a recipe for Nacatamales?
+Instruction: Answer with a JSON array of the form [{"step": "STEP {i} INSTRUCTION GOES HERE"}].
+
+Query: I have to come up with alliterations specifically within the subject of the ocean. So organisms found in the ocean or things related to the ocean.
+Instruction: Use only words that start and end with the same letter.
+
+Query: looking to clean my dirty bathtub
+Instruction: respond with a haiku
+
+Query: What kind of food do I give my pet lizard
+Instruction: Reply using only the second half of the alphabet (N-Z)
