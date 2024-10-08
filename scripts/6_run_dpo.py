@@ -28,6 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
     parser.add_argument('--include-chosen-nll-loss', action='store_true', help='If true, include an additional NLL loss term on the chosen response', default=False)
 
+    parser.add_argument(f'--chosen-threshold', type=float, default=0.5, help='Chosen responses will have pass rate >= threshold')
+    parser.add_argument(f'--rejected-threshold', type=float, default=0.0, help='Rejected responses will have pass rate < threshold (or == threshold if threshold is 0)')
     parser.add_argument('--no-loop', action='store_true', help='If true, do not loop the short of the [chosen, rejected] lists during zip.', default=False)
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 5_sort_completions.py')
@@ -43,7 +45,15 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
-    dataloader = construct_dpo_dataloader(tokenizer, data, args.context_length, args.batch_size, args.no_loop)
+    dataloader = construct_dpo_dataloader(
+        tokenizer,
+        data,
+        args.context_length,
+        args.batch_size,
+        args.no_loop,
+        args.chosen_threshold,
+        args.rejected_threshold
+    )
     print(f'Number of batches: {len(dataloader)}')
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)

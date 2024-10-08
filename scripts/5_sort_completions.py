@@ -39,7 +39,7 @@ def process_instance(instance: dict[str, object]) -> dict[str, object]:
     num_verifiers = len(instance['verifiers'])
     for completion_idx, completion in enumerate(completions):
         pass_rate = num_passes[completion_idx] / num_verifiers
-        scores[completion] = num_passes[completion_idx]
+        scores[completion] = pass_rate
         print(f'Pass rate: {pass_rate}')
         if pass_rate >= 0.5:
             chosen.append(completion)
