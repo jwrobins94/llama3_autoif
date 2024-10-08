@@ -25,9 +25,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str) -> str:
-    return f'''{query}
-{instruction}
-'''
+    return f'''Respond to the user's query while obeying the instruction exactly.
+Your response must adhere to a strict interpretation of the instruction.
+Query: {query}
+Instruction: {instruction}'''
 
 if __name__ == '__main__':
     args = parse_args()
