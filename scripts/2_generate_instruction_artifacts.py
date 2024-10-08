@@ -70,6 +70,9 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         instructions_w_queries = [json.loads(line) for line in f.read().splitlines()]
+    
+    # filter out empty instructions
+    instructions_w_queries = [x for x in instructions_w_queries if x['instruction']]
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
