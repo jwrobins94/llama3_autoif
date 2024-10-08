@@ -6,6 +6,7 @@ import json
 from core.inference_utils import generate_completions
 from core.data_utils import merge_outputs
 from torch.utils.data import DataLoader, DistributedSampler
+import random
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -24,14 +25,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
     
-def construction_generation_prompt(query: str, instruction: str) -> str:
+def construction_generation_prompt(query: str, instruction: str, verifier: str) -> str:
     return f'''Respond to the user's query.
 Your entire response must adhere to a strict interpretation of the instruction.
+
 Query: {query}
-Instruction: {instruction}'''
+Instruction: {instruction}
+
+Your entire response will be parsed as a string and must pass the following verification function:
+```
+{verifier}
+```'''
 
 if __name__ == '__main__':
     args = parse_args()
+    random.seed(42)
 
     with open(args.input) as f:
         lines = f.read().splitlines()
@@ -57,14 +65,18 @@ if __name__ == '__main__':
             for elem in batch:
                 query = elem['query']
                 instruction = elem['instruction']
+                verifiers = elem['verifiers']
 
-                prompts = [
-                        tokenizer.apply_chat_template(
-                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction)}],
+                prompts = []
+                for _ in range(args.num_completions):
+                    # sample a verifier as context for the model
+
+                    verifier = random.choice(verifiers)
+                    prompts.append(tokenizer.apply_chat_template(
+                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction, verifier)}],
                         add_generation_prompt=True,
                         tokenize=False
-                    )
-                ] * args.num_completions
+                    ))
                 all_prompts.extend(prompts)
             completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
