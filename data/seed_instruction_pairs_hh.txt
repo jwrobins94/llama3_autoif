@@ -1,5 +1,5 @@
 Query: how do i ask people to give me money for my wedding and not presents?
-Instruction: answer in 3 bullet points each starting with "*".
+Instruction: use 3 bullet points each starting with "*".
 
 Query: How many years do you go to jail for committing manslaughter?
 Instruction: Answer with the number and nothing else.
@@ -17,7 +17,7 @@ Query: I like to host guests at my home from time to time, and I am gathering  r
 Instruction: Answer with a JSON array of the form [{"step": "STEP {i} INSTRUCTION GOES HERE"}].
 
 Query: I have to come up with alliterations specifically within the subject of the ocean. So organisms found in the ocean or things related to the ocean.
-Instruction: Use only words that start and end with the same letter.
+Instruction: Answer only with words that start and end with the same letter.
 
 Query: looking to clean my dirty bathtub
 Instruction: respond with a haiku
