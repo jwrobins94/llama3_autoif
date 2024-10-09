@@ -21,12 +21,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--strategy', type=str, default='deepspeed_stage_2', help='Distributed training strategy')
     parser.add_argument(f'--batch-size', type=int, default=4, help='Batch size')
     parser.add_argument(f'--epochs', type=int, default=1, help='Number of epochs')
+    parser.add_argument(f'--grad-acc-steps', type=int, default=1, help='Number of steps for gradient accumulation')
     parser.add_argument(f'--kl-beta', type=float, default=0.1, help='KL beta')
     parser.add_argument(f'--lr', type=float, default=5e-6, help='Peak learning rate')
     parser.add_argument(f'--beta1', type=float, default=0.9, help='AdamW beta1')
     parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
     parser.add_argument('--include-chosen-nll-loss', action='store_true', help='If true, include an additional NLL loss term on the chosen response', default=False)
+
+    parser.add_argument(f'--chosen-threshold', type=float, default=0.5, help='Chosen responses will have pass rate >= threshold')
+    parser.add_argument(f'--rejected-threshold', type=float, default=0.0, help='Rejected responses will have pass rate < threshold (or == threshold if threshold is 0)')
+    parser.add_argument('--no-loop', action='store_true', help='If true, do not loop the short of the [chosen, rejected] lists during zip.', default=False)
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 5_sort_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
@@ -41,7 +46,15 @@ if __name__ == '__main__':
 
     tokenizer = load_tokenizer(args.hf_api_token)
 
-    dataloader = construct_dpo_dataloader(tokenizer, data, args.context_length, args.batch_size)
+    dataloader = construct_dpo_dataloader(
+        tokenizer,
+        data,
+        args.context_length,
+        args.batch_size,
+        args.no_loop,
+        args.chosen_threshold,
+        args.rejected_threshold
+    )
     print(f'Number of batches: {len(dataloader)}')
 
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
@@ -54,7 +67,7 @@ if __name__ == '__main__':
         tokenizer,
         args.kl_beta,
         args.lr,
-        len(dataloader) * args.epochs,
+        len(dataloader) * args.epochs // args.grad_acc_steps,
         args.warm_up_steps,
         args.beta1,
         args.beta2,
@@ -68,6 +81,7 @@ if __name__ == '__main__':
         precision='bf16', # hardcode to bf16 since the model itself is loaded in bf16
         strategy=args.strategy,
         logger=logger,
+        accumulate_grad_batches=args.grad_acc_steps,
         log_every_n_steps=1,
         enable_checkpointing=False
     )

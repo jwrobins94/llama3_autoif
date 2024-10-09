@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--ckpt', type=str, default=None, help='Optional path for trained model checkpoint')
     parser.add_argument(f'--context-length', type=int, default=2048, help='Context length')
-    parser.add_argument(f'--max-tokens', type=int, default=512, help='Max tokens per generation')
+    parser.add_argument(f'--max-tokens', type=int, default=1024, help='Max tokens per generation')
     parser.add_argument(f'--batch-size', type=int, default=8, help='Batch size for generations')
 
     parser.add_argument(f'--num-verifications', type=int, required=True, help='Number of verifiers per instruction')
@@ -49,7 +49,9 @@ def evaluate(response: str) -> bool:
 
 The user will issue the following query: {query}
 Write the 'evaluate' function that checks whether a response to this query follows this instruction: {instruction}
-Do not comment your code.'''
+If the instruction can be interpreted in multiple valid ways, write your code to accept any of those interpretations as valid.
+Stop once you have finished writing the 'evaluate' function (omit test cases).
+Think step-by-step and write your thought process as comments in the code.'''
 
 
 def construct_test_case_prompt(instruction: str) -> str:
@@ -70,6 +72,9 @@ if __name__ == '__main__':
 
     with open(args.input) as f:
         instructions_w_queries = [json.loads(line) for line in f.read().splitlines()]
+    
+    # filter out empty instructions
+    instructions_w_queries = [x for x in instructions_w_queries if x['instruction']]
 
     tokenizer = load_tokenizer(args.hf_api_token)
     model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)

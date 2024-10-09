@@ -67,7 +67,7 @@ Note that some of the completions are repeated. As in AutoIF, we generate chosen
 | -------- | ------- |
 | Run IFEval  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/ifeval.json --benchmark ifeval --ckpt <optional checkpoint for fine-tuned model>`|
 | Run Hellaswag  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/hellaswag.json --benchmark hellaswag --ckpt <optional checkpoint for fine-tuned model>`|
-| Generate instructions | `deepspeed --num_gpus 8 scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 32`   |
+| Generate instructions | `deepspeed --num_gpus 8 scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs_sharegpt.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 32`   |
 | Generate verifiers and test cases    | `deepspeed --num_gpus 8 scripts/2_generate_instruction_artifacts.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/new_instruction_pairs.jsonl --output /tmp/verifiers --num-verifications 4`    |
 | Filter instructions    | `python3 scripts/3_filter_instructions.py --input /tmp/verifiers.jsonl --output /tmp/filtered_verifiers.jsonl`    |
 | Generate completions    | `deepspeed --num_gpus 8 scripts/4_generate_completions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/filtered_verifiers.jsonl --output /tmp/completions --num-completions 8 --batch-size 4`    |
