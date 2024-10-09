@@ -3,7 +3,7 @@ Self-contained implementation of the paper [Self-play with Execution Feedback](h
 
 Reproducibility notes:
 1. All experiments were run on LambdaLabs using a single 8 x H100 instance.
-2. Dataset generation runs in a few hours for ~$100 in total cost. The data is available on HuggingFace [here](https://huggingface.co/datasets/jwrobins94/llama3-autoif/tree/main).
+2. Dataset generation runs in a few hours for ~$150 in total cost. The data is available on HuggingFace [here](https://huggingface.co/datasets/jwrobins94/llama3-autoif/tree/main).
 3. Using the provided code and LLama 3.1 8B for data generation results in ~15k chosen-rejected pairs. Not all completions are unique (see "Commands").
 4. Fine-tuning for 1 epoch takes ~15 minutes for Llama 3.1 8B.
 
