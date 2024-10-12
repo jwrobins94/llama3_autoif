@@ -40,11 +40,11 @@ def parse_test_cases(test_group_strs: list[str]) -> list[tuple[str, bool]]:
             try:
                 test = json.loads(test_str)
                 if not validate_testcase(test):
-                    print(f'Bad test case: {test}')
+                    print(f'Bad test case: {test_str}')
                     continue
             except:
                 # model produced invalid json; skip it
-                print(f'Bad test case: {test}')
+                print(f'Bad test case: {test_str}')
                 continue
             res.append((test['response'], test['result']))
 
