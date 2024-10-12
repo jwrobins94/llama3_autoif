@@ -19,7 +19,18 @@ def can_compile(function_str: str) -> tuple[Optional[Callable[[str], bool]], boo
         return local_evaluate, True # evaluate is generated dynamically from exec
     except:
         return None, False
-    
+
+def validate_testcase(test: dict[str, object]) -> bool:
+    if ('response' not in test) or ('result' not in test):
+        return False
+    response = test['response']
+    if not isinstance(response, str):
+        return False
+    result = test['result']
+    if not isinstance(result, bool):
+        return False
+    return True
+
 def parse_test_cases(test_group_strs: list[str]) -> list[tuple[str, bool]]:
     res = []
     for group_str in test_group_strs:
@@ -28,19 +39,14 @@ def parse_test_cases(test_group_strs: list[str]) -> list[tuple[str, bool]]:
         for test_str in test_strs:
             try:
                 test = json.loads(test_str)
-                if ('response' not in test) or ('result' not in test):
-                    raise ValueError()
-                response = test['response']
-                if not isinstance(response, str):
-                    raise ValueError()
-                result = test['result']
-                if not isinstance(result, bool):
-                    raise ValueError()
+                if not validate_testcase(test):
+                    print(f'Bad test case: {test}')
+                    continue
             except:
                 # model produced invalid json; skip it
-                print(test_str)
+                print(f'Bad test case: {test}')
                 continue
-            res.append((response, result))
+            res.append((test['response'], test['result']))
 
     return res
 
