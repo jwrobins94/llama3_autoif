@@ -7,6 +7,7 @@ from typing import Optional
 # Non-instruct models are not trained for chat and hence cannot be used with our prompts.
 ALLOWED_MODELS = [
     'meta-llama/Llama-3.1-8B-Instruct',
+    'meta-llama/Llama-3.1-70B-Instruct',
     'meta-llama/Llama-3.2-1B-Instruct'
 ]
 

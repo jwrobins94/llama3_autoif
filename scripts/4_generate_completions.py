@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 3_filter_instructions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final (instruction, verifiers, completions) tuples')
 
-    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
+    parser.add_argument(f'--local_rank', type=int, default=0, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str, verifier: str) -> str:
@@ -50,13 +50,16 @@ if __name__ == '__main__':
         all_instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
+    #model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
+    from vllm import LLM, SamplingParams
+    model = LLM(model=args.model, tensor_parallel_size=4)
 
-    if torch.cuda.is_available():
-        model.to(f'cuda:{args.local_rank}')
+    #if torch.cuda.is_available():
+    #    model.to(f'cuda:{args.local_rank}')
 
-    torch.distributed.init_process_group('nccl', rank=args.local_rank)
+    #torch.distributed.init_process_group('nccl', rank=args.local_rank)
 
+    
     sampler = DistributedSampler(all_instructions, shuffle=False)
     dataloader = DataLoader(all_instructions, batch_size=args.batch_size, sampler=sampler, collate_fn=list)
 
@@ -82,7 +85,16 @@ if __name__ == '__main__':
                         tokenize=False
                     ))
                 all_prompts.extend(prompts)
-            completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+
+            sampling_params = SamplingParams(temperature=1.0, top_p=1.0, max_tokens=args.max_tokens, stop=[tokenizer.eos_token, '<|eom_id|>'])
+            outputs = model.generate(all_prompts, sampling_params)
+
+            completions = []
+            for output in outputs:
+                prompt = output.prompt
+                generated_text = output.outputs[0].text
+                completions.append(generated_text)
+            #completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
             completions_per_query = args.num_completions
             
