@@ -1,14 +1,12 @@
-import torch.distributed
-from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import time
-from core.inference_utils import generate_completions
-from core.data_utils import load_sharegpt_queries, merge_outputs, load_hh_queries
+from core.data_utils import load_sharegpt_queries, load_hh_queries
 import random
 import json
-from torch.utils.data import DataLoader, DistributedSampler
+from torch.utils.data import DataLoader
+from vllm import LLM, SamplingParams
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate instructions from a set of seed instructions via view-shot prompting')
@@ -24,8 +22,6 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to a newline-delimited list of Query-Instruction pairs; see data/seed_instruction_pairs.txt for an example')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write generated instructions')
-
-    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
 
     return parser.parse_args()
 
@@ -50,12 +46,11 @@ if __name__ == '__main__':
         seed_instructions = f.read() # read as a whole
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
-
-    if torch.cuda.is_available():
-        model.to(f'cuda:{args.local_rank}')
-
-    torch.distributed.init_process_group('nccl', rank=args.local_rank)
+    
+    if args.ckpt:
+        raise ValueError('ckpt is not implemented for vllm')
+    model = LLM(model=args.model, tensor_parallel_size=torch.cuda.device_count(), max_model_len=args.context_length,
+               gpu_memory_utilization=0.95)
 
     base_prompt = tokenizer.apply_chat_template(
         [{'role': 'user', 'content': construct_prompt(seed_instructions)}],
@@ -82,28 +77,36 @@ if __name__ == '__main__':
             'query': query,
             'prompt': f'{base_prompt}\nQuery: {query}\nInstruction:'
         })
-    sampler = DistributedSampler(all_prompts, shuffle=False)
-    dataloader = DataLoader(all_prompts, batch_size=args.batch_size, sampler=sampler)
+    dataloader = DataLoader(all_prompts, batch_size=args.batch_size)
 
     start_ts = time.time()
-    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as f:
+    with open(f'{args.output}.jsonl', 'w') as f:
         num_generated = 0
         for batch in dataloader:
             prompts = batch['prompt']
             num_generated += len(prompts)
             sampled_queries = batch['query']
-            completions = generate_completions(model, tokenizer, prompts, ['\n', tokenizer.eos_token, '<|eom_id|>'], args.tokens_per_completion)
+
+            sampling_params = SamplingParams(
+                temperature=1.0,
+                top_p=1.0,
+                max_tokens=args.tokens_per_completion,
+                stop=['\n', tokenizer.eos_token, '<|eom_id|>'],
+            )
+            outputs = model.generate(prompts, sampling_params)
+
+            completions = []
+            for output in outputs:
+                prompt = output.prompt
+                generated_text = output.outputs[0].text
+                completions.append(generated_text)
+
             for query, completion in zip(sampled_queries, completions):
                 f.write(json.dumps({
                     'query': query,
                     'instruction': completion.strip()
                 }))
                 f.write('\n')
-            print(f'[{args.local_rank}] Generated {num_generated} instructions.')
+            print(f'Generated {num_generated} instructions.')
     end_ts = time.time()
-    print(f'[{args.local_rank}] Generated instructions in {end_ts - start_ts} seconds.')
-
-    torch.distributed.barrier()
-
-    if args.local_rank == 0:
-        merge_outputs(args.output)
+    print(f'Generated instructions in {end_ts - start_ts} seconds.')
