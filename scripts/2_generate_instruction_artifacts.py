@@ -137,7 +137,7 @@ if __name__ == '__main__':
                         add_generation_prompt=True,
                         tokenize=False
                     ) + f'{testcase_prefix}'
-                    for messages in messages_mat
+                    for messages in messages_mat_new
                 ]
                 
                 all_prompts_2.extend(prompts_2)
