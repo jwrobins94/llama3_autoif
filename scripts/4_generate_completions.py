@@ -49,7 +49,8 @@ if __name__ == '__main__':
     
     if args.ckpt:
         raise ValueError('ckpt is not implemented for vllm')
-    model = LLM(model=args.model, dtype=torch.bfloat16, tensor_parallel_size=torch.cuda.device_count(), max_model_len=args.context_length)
+    model = LLM(model=args.model, dtype=torch.bfloat16, tensor_parallel_size=torch.cuda.device_count(), max_model_len=args.context_length,
+               gpu_memory_utilization=0.95)
 
     dataloader = DataLoader(all_instructions, batch_size=args.batch_size, collate_fn=list)
 
