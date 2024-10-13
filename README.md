@@ -108,12 +108,12 @@ Results can be reproduced using the following commands:
 | -------- | ------- |
 | Run IFEval  |  no change |
 | Run Hellaswag  | no change |
-| Generate instructions | `deepspeed --num_gpus 8 scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs_hh.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 32` |
+| Generate instructions | `python scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs_hh.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 512 --query-source hh` |
 | Generate verifiers and test cases    | no change |
 | Filter instructions    | no change |
 | Generate completions    | no change |
 | Sort completions    | no change |
-| Fine tune with DPO    | `python3 scripts/6_run_dpo.py --model meta-llama/Llama-3.2-1B-Instruct --hf-api-token <TODO> --batch-size 8 --grad-acc-steps 4 --lr 3e-6 --input /tmp/sorted_completions.jsonl --output /tmp/model.ckpt`  |
+| Fine tune with DPO    | `python scripts/6_run_dpo.py --model meta-llama/Llama-3.2-1B-Instruct --hf-api-token <TODO> --batch-size 8 --grad-acc-steps 4 --lr 3e-6 --input /tmp/sorted_completions.jsonl --output /tmp/model.ckpt`  |
 
 See "Experiments: 2024-10-06" for the base commands.
 
@@ -160,12 +160,12 @@ Note that some of the completions are repeated. As in AutoIF, we generate chosen
 | -------- | ------- |
 | Run IFEval  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/ifeval.json --benchmark ifeval --ckpt <optional checkpoint for fine-tuned model>`|
 | Run Hellaswag  | `accelerate launch scripts/evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --output /tmp/hellaswag.json --benchmark hellaswag --ckpt <optional checkpoint for fine-tuned model>`|
-| Generate instructions | `deepspeed --num_gpus 8 scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs_sharegpt.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 32`   |
-| Generate verifiers and test cases    | `deepspeed --num_gpus 8 scripts/2_generate_instruction_artifacts.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/new_instruction_pairs.jsonl --output /tmp/verifiers --num-verifications 4`    |
-| Filter instructions    | `python3 scripts/3_filter_instructions.py --input /tmp/verifiers.jsonl --output /tmp/filtered_verifiers.jsonl`    |
-| Generate completions    | `deepspeed --num_gpus 8 scripts/4_generate_completions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/filtered_verifiers.jsonl --output /tmp/completions --num-completions 8 --batch-size 4`    |
-| Sort completions    | `python3 scripts/5_sort_completions.py --input /tmp/completions.jsonl --output /tmp/sorted_completions.jsonl`    |
-| Fine tune with DPO    | `python3 scripts/6_run_dpo.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --batch-size 4 --input /tmp/sorted_completions.jsonl --output /tmp/model.ckpt --lr 1e-6`    |
+| Generate instructions | `python scripts/1_generate_instructions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input data/seed_instruction_pairs_sharegpt.txt --output /tmp/new_instruction_pairs --limit 10000 --batch-size 512`   |
+| Generate verifiers and test cases    | `python scripts/2_generate_instruction_artifacts.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/new_instruction_pairs.jsonl --output /tmp/verifiers --num-verifications 4 --batch-size 512`    |
+| Filter instructions    | `python scripts/3_filter_instructions.py --input /tmp/verifiers.jsonl --output /tmp/filtered_verifiers.jsonl`    |
+| Generate completions    | `python scripts/4_generate_completions.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --input /tmp/filtered_verifiers.jsonl --output /tmp/completions --num-completions 8 --batch-size 512`    |
+| Sort completions    | `python scripts/5_sort_completions.py --input /tmp/completions.jsonl --output /tmp/sorted_completions.jsonl`    |
+| Fine tune with DPO    | `python scripts/6_run_dpo.py --model meta-llama/Llama-3.1-8B-Instruct --hf-api-token <TODO> --batch-size 4 --input /tmp/sorted_completions.jsonl --output /tmp/model.ckpt --lr 1e-6`    |
 
 ### Results
 
