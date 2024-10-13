@@ -87,8 +87,6 @@ if __name__ == '__main__':
             num_generated += len(prompts)
             sampled_queries = batch['query']
 
-            # completions = generate_completions(model, tokenizer, prompts, ['\n', tokenizer.eos_token, '<|eom_id|>'], args.tokens_per_completion)
-
             sampling_params = SamplingParams(
                 temperature=1.0,
                 top_p=1.0,

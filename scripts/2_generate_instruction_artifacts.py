@@ -135,8 +135,6 @@ if __name__ == '__main__':
                         tokenize=False
                     ) + f'{testcase_prefix}'
                     all_prompts_2.append(prompt)
-
-            #completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             
             sampling_params = SamplingParams(
                 temperature=1.0,
