@@ -1,11 +1,9 @@
-from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from core.inference_utils import generate_completions
-from torch.utils.data import DataLoader, DistributedSampler
-from core.data_utils import merge_outputs
+from torch.utils.data import DataLoader
+from vllm import LLM, SamplingParams
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate test cases and verification functions')
@@ -22,7 +20,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 1_generate_instructions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to the test cases and verification functions (JSON format)')
 
-    parser.add_argument(f'--local_rank', type=int, required=True, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
 
 
@@ -77,17 +74,13 @@ if __name__ == '__main__':
     instructions_w_queries = [x for x in instructions_w_queries if x['instruction']]
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
+    if args.ckpt:
+        raise ValueError('ckpt is not implemented for vllm')
+    model = LLM(model=args.model, dtype=torch.bfloat16, tensor_parallel_size=torch.cuda.device_count())
 
-    if torch.cuda.is_available():
-        model.to(f'cuda:{args.local_rank}')
+    dataloader = DataLoader(instructions_w_queries, batch_size=args.batch_size)
 
-    torch.distributed.init_process_group('nccl', rank=args.local_rank)
-
-    sampler = DistributedSampler(instructions_w_queries, shuffle=False)
-    dataloader = DataLoader(instructions_w_queries, batch_size=args.batch_size, sampler=sampler)
-
-    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
+    with open(f'{args.output}.jsonl', 'w') as output_file:
         instruction_idx = 0
         for instruction_w_query_batch in dataloader:
             all_prompts = []
@@ -95,7 +88,7 @@ if __name__ == '__main__':
             for query, instruction in zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction']):
                 instruction_idx += 1
 
-                print(f'[{args.local_rank}] Processing instruction {instruction_idx}.')
+                print(f'Processing instruction {instruction_idx}.')
                 messages_mat = [[{'role': 'user', 'content': construct_verifier_prompt(query, instruction)}] for _ in range(args.num_verifications)]
                 prompts = [
                         tokenizer.apply_chat_template(
@@ -110,7 +103,22 @@ if __name__ == '__main__':
                 
                 all_prompts.extend(prompts)
             
-            completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+            #completions = generate_completions(model, tokenizer, all_prompts, ['```', tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+            
+            sampling_params = SamplingParams(
+                temperature=1.0,
+                top_p=1.0,
+                max_tokens=args.max_tokens,
+                stop=['```', tokenizer.eos_token, '<|eom_id|>'],
+            )
+            outputs = model.generate(all_prompts, sampling_params)
+
+            completions = []
+            for output in outputs:
+                prompt = output.prompt
+                generated_text = output.outputs[0].text
+                completions.append(generated_text)
+            
             verified_completions = [fn_prefix + completion for completion in completions]
 
             testcase_prefix = '{"response": "'
@@ -134,7 +142,22 @@ if __name__ == '__main__':
                     prompts_2[i] = prompt + f'{testcase_prefix}'
                 all_prompts_2.extend(prompts_2)
 
-            completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+            #completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
+            
+            sampling_params = SamplingParams(
+                temperature=1.0,
+                top_p=1.0,
+                max_tokens=args.max_tokens,
+                stop=[tokenizer.eos_token, '<|eom_id|>'],
+            )
+            outputs = model.generate(all_prompts_2, sampling_params)
+
+            completions = []
+            for output in outputs:
+                prompt = output.prompt
+                generated_text = output.outputs[0].text
+                completions.append(generated_text)
+            
             testcase_completions = [testcase_prefix + completion for completion in completions]
             
             for group_idx, (query, instruction) in enumerate(zip(instruction_w_query_batch['query'], instruction_w_query_batch['instruction'])):
@@ -147,8 +170,3 @@ if __name__ == '__main__':
                 output_file.write(json.dumps(obj))
                 output_file.write('\n')
             output_file.flush()
-
-    torch.distributed.barrier()
-
-    if args.local_rank == 0:
-        merge_outputs(args.output)

@@ -1,12 +1,10 @@
-from core.model import load_model
 from core.tokenizer import load_tokenizer
 import argparse
 import torch
 import json
-from core.inference_utils import generate_completions
-from core.data_utils import merge_outputs
-from torch.utils.data import DataLoader, DistributedSampler
+from torch.utils.data import DataLoader
 import random
+from vllm import LLM, SamplingParams
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
@@ -21,8 +19,6 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 3_filter_instructions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final (instruction, verifiers, completions) tuples')
-
-    parser.add_argument(f'--local_rank', type=int, default=0, help='GPU index (set automatically by deepspeed)')
     return parser.parse_args()
     
 def construction_generation_prompt(query: str, instruction: str, verifier: str) -> str:
@@ -50,24 +46,18 @@ if __name__ == '__main__':
         all_instructions = list(map(json.loads, lines))
 
     tokenizer = load_tokenizer(args.hf_api_token)
-    #model = load_model(args.model, tokenizer, args.context_length, args.hf_api_token, args.ckpt)
-    from vllm import LLM, SamplingParams
-    model = LLM(model=args.model, tensor_parallel_size=4)
-
-    #if torch.cuda.is_available():
-    #    model.to(f'cuda:{args.local_rank}')
-
-    #torch.distributed.init_process_group('nccl', rank=args.local_rank)
-
     
-    sampler = DistributedSampler(all_instructions, shuffle=False)
-    dataloader = DataLoader(all_instructions, batch_size=args.batch_size, sampler=sampler, collate_fn=list)
+    if args.ckpt:
+        raise ValueError('ckpt is not implemented for vllm')
+    model = LLM(model=args.model, dtype=torch.bfloat16, tensor_parallel_size=torch.cuda.device_count())
 
-    with open(f'{args.output}-{args.local_rank}.jsonl', 'w') as output_file:
+    dataloader = DataLoader(all_instructions, batch_size=args.batch_size, collate_fn=list)
+
+    with open(f'{args.output}.jsonl', 'w') as output_file:
         num_processed = 0
         for batch in dataloader:
             num_processed += len(batch)
-            print(f'[{args.local_rank}] Generating completions: {num_processed}')
+            print(f'Generating completions: {num_processed}')
             all_prompts = []
             for elem in batch:
                 query = elem['query']
@@ -86,7 +76,12 @@ if __name__ == '__main__':
                     ))
                 all_prompts.extend(prompts)
 
-            sampling_params = SamplingParams(temperature=1.0, top_p=1.0, max_tokens=args.max_tokens, stop=[tokenizer.eos_token, '<|eom_id|>'])
+            sampling_params = SamplingParams(
+                temperature=1.0,
+                top_p=1.0,
+                max_tokens=args.max_tokens,
+                stop=[tokenizer.eos_token, '<|eom_id|>'],
+            )
             outputs = model.generate(all_prompts, sampling_params)
 
             completions = []
@@ -94,7 +89,6 @@ if __name__ == '__main__':
                 prompt = output.prompt
                 generated_text = output.outputs[0].text
                 completions.append(generated_text)
-            #completions = generate_completions(model, tokenizer, all_prompts, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
 
             completions_per_query = args.num_completions
             
@@ -104,8 +98,3 @@ if __name__ == '__main__':
                 output_file.write(json.dumps(res))
                 output_file.write('\n')
             output_file.flush()
-    
-    torch.distributed.barrier()
-
-    if args.local_rank == 0:
-        merge_outputs(args.output)

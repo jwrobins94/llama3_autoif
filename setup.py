@@ -17,6 +17,7 @@ setup(
         'jinja2>=3.1.0',
         'huggingface_hub',
         'ipykernel',
-        'numpy'
+        'numpy',
+        'vllm'
     ]
 )
