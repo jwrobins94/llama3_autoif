@@ -113,7 +113,6 @@ if __name__ == '__main__':
             outputs = model.generate(all_prompts, sampling_params)
 
             verified_completions = []
-            messages_mat_new = []
             for i, output in enumerate(outputs):
                 messages_mat_row = []
                 verified_completions_row = []
@@ -121,26 +120,21 @@ if __name__ == '__main__':
                     verified_completions_row.append(fn_prefix + o.text)
 
                 verified_completions.append(verified_completions_row)
-                messages_mat_new.append([list(messages_mat[i]) for _ in range(args.num_verifications)])         
 
             testcase_prefix = '{"response": "'
             all_prompts_2 = []
             for elem_idx, elem in enumerate(batch):
                 instruction = elem['instruction']
                 for i in range(args.num_verifications):
-                    messages_mat_new[elem_idx][i].append({'role': 'assistant', 'content': f'```\n{verified_completions[elem_idx][i]}```'})
-                    messages_mat_new[elem_idx][i].append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
-
-                prompts_2 = [
-                    tokenizer.apply_chat_template(
+                    messages = list(messages_mat[elem_idx]) # make a copy
+                    messages.append({'role': 'assistant', 'content': f'```\n{verified_completions[elem_idx][i]}```'})
+                    messages.append({'role': 'user', 'content': construct_test_case_prompt(instruction)})
+                    prompt = tokenizer.apply_chat_template(
                         messages,
                         add_generation_prompt=True,
                         tokenize=False
                     ) + f'{testcase_prefix}'
-                    for messages in messages_mat_new
-                ]
-                
-                all_prompts_2.extend(prompts_2)
+                    all_prompts_2.append(prompt)
 
             #completions = generate_completions(model, tokenizer, all_prompts_2, [tokenizer.eos_token, '<|eom_id|>'], args.max_tokens)
             
