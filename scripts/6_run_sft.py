@@ -2,7 +2,7 @@ import lightning.pytorch
 import lightning.pytorch.loggers
 from core.model import load_model
 from core.tokenizer import load_tokenizer
-from core.dpo_lightning_model import SFTLightningModel
+from core.sft_lightning_model import SFTLightningModel
 import argparse
 import json
 from core.sft_data_loader import construct_sft_dataloader
