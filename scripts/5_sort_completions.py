@@ -67,6 +67,7 @@ if __name__ == '__main__':
 
     id_to_instance = {}
     for path in glob.glob(args.input):
+        print(f'Reading input: {path}')
         with open(path) as f:
             raw_instances = [json.loads(line) for line in f.read().splitlines()]
             for instance in raw_instances:
