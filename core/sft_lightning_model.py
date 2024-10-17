@@ -60,7 +60,6 @@ class SFTLightningModel(lightning.LightningModule):
         return res
 
     def training_step(self, batch, batch_idx):
-        self.ref_model.eval()
         with torch.no_grad():
             context_lengths = torch.sum(batch['attention_mask_context'], dim=-1)
             seq_lengths_chosen = torch.sum(batch['attention_mask_chosen'], dim=-1)
