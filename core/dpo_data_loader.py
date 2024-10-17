@@ -8,7 +8,7 @@ def construct_dpo_dataloader(
         rows: list[dict[str, object]],
         context_length: int,
         batch_size: int,
-        no_loop: bool,
+        max_loop: int | None,
         chosen_threshold: float,
         rejected_threshold: float
     ) -> DataLoader:
@@ -24,14 +24,20 @@ def construct_dpo_dataloader(
             if (score < rejected_threshold) or (rejected_threshold == score == 0):
                 rejected.append(completion)
 
-        if no_loop:
-            zip_list = zip(chosen, rejected)
-        else:
+
+
+        if not max_loop:
             # As in the paper, we loop the shorter of the two lists to ensure that all generated completions are used at least once.
             if len(chosen) > len(rejected):
                 zip_list = zip(chosen, cycle(rejected))
             else:
                 zip_list = zip(cycle(chosen), rejected)
+        else:
+            if len(chosen) > len(rejected):
+                zip_list = zip(chosen, rejected * max_loop)
+            else:
+                zip_list = zip(chosen * max_loop, rejected)
+            
         
         for chosen, rejected in zip_list:
             messages_chosen = [
