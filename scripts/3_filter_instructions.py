@@ -57,8 +57,13 @@ def passes(verifier_fn: Callable[[str], bool], input_str: str, result: bool) -> 
         return False
 
 
-def passes_validation(query: str, instruction: str, verifiers: list[str], testcases: list[str]) -> tuple[dict[str, object], bool]:
-    stats = {
+def passes_validation(instance_id: int,
+                      query: str,
+                      instruction: str,
+                      verifiers: list[str],
+                      testcases: list[str]) -> tuple[dict[str, object], bool]:
+    res = {
+        'instance_id': instance_id,
         'verifier_count': len(verifiers),
         'testcase_str_count': len(testcases)
     }
@@ -75,18 +80,18 @@ def passes_validation(query: str, instruction: str, verifiers: list[str], testca
             print(verifier)
     verifiers = filtered_verifiers
     print(f'Verifiers compile: {len(verifiers)}')
-    stats['compiled_verifiers'] = len(verifiers)
+    res['compiled_verifiers'] = len(verifiers)
     if not verifiers:
-        return stats, False
+        return res, False
     
     print(verifier_functions)
 
     # parse test cases into tuples
     test_cases = parse_test_cases(testcases) # TODO use better naming for test_cases vs testcases
     print(f'Test cases parse: {len(test_cases)}')
-    stats['test_cases_parse'] = len(test_cases)
+    res['test_cases_parse'] = len(test_cases)
     if not test_cases:
-        return stats, False
+        return res, False
         
     # remove test cases that don't pass at least one verifier
     filtered_test_cases = []
@@ -101,9 +106,9 @@ def passes_validation(query: str, instruction: str, verifiers: list[str], testca
     test_cases = filtered_test_cases
     num_test_cases = len(test_cases)
     print(f'Test cases pass at least one verifier: {num_test_cases}')
-    stats['test_cases_pass_gte1'] = num_test_cases
+    res['test_cases_pass_gte1'] = num_test_cases
     if not num_test_cases:
-        return stats, False
+        return res, False
     
     # filter verifiers to those that pass at least 80% of test cases
     filtered_verifiers = []
@@ -119,20 +124,20 @@ def passes_validation(query: str, instruction: str, verifiers: list[str], testca
         total_passes += num_passed
     verifiers = filtered_verifiers
     print(f'Verifiers pass at least 80% of test cases: {len(verifiers)}')
-    stats['verifiers_pass_80pct'] = len(verifiers)
-    stats['total_passes'] = total_passes
+    res['verifiers_pass_80pct'] = len(verifiers)
+    res['total_passes'] = total_passes
     if not verifiers:
-        return stats, False
+        return res, False
 
     # TODO note!!! Verifiers and test cases have been parsed in the returned object
-    stats.update({
+    res.update({
         'query': query,
         'instruction': instruction,
         'test_cases': test_cases,
         'verifiers': verifiers,
         'unique_instances': 1
     })
-    return stats, True
+    return res, True
         
 
 if __name__ == '__main__':
@@ -158,9 +163,10 @@ if __name__ == '__main__':
 
     with ProcessPoolExecutor(16) as executor:
         futures = []
-        for instance in orig_instances:
+        for instance_id, instance in enumerate(orig_instances):
             future = executor.submit(
                 passes_validation,
+                instance_id,
                 instance['query'],
                 instance['instruction'],
                 instance['verifiers'],
