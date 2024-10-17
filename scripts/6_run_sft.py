@@ -12,7 +12,7 @@ from lightning.pytorch.utilities.rank_zero import rank_zero_only
 from lightning.pytorch.loggers import WandbLogger
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
+    parser = argparse.ArgumentParser(description='Script to run SFT')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     
