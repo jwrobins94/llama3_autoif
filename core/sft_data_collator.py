@@ -1,6 +1,6 @@
 from transformers import PreTrainedTokenizerFast
 
-PREFIXES = ['chosen', 'rejected']
+PREFIXES = ['chosen', 'context']
 
 class SFTDataCollator:
 
