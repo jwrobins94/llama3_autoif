@@ -21,17 +21,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final (instruction, verifiers, completions) tuples')
     return parser.parse_args()
     
-def construction_generation_prompt(query: str, instruction: str, verifier: str) -> str:
-    prompt = f'''You will be given a verification function, a query, and an instruction.
-Your task is to produce a response to the query such that your response strictly adheres to the instruction and passes the verification function.
-    
-Read the following verification function carefully:
-```
-{verifier}
-```
-
-Now, respond to the following query while adhering to the instruction.
-Only reply with your response and remember that your entire response will be passed to the verification function verbatim.
+def construction_generation_prompt(query: str, instruction: str) -> str:
+    prompt = f'''You will be given a query and an instruction.
+Your task is to respond to the query such that your response strictly adheres to the instruction.
+After you respond, an automated system will take your response verbatim and run a Python function to check whether it follows the instruction.
 
 Query: {query}
 Instruction: {instruction}'''
@@ -65,22 +58,18 @@ if __name__ == '__main__':
                 instruction = elem['instruction']
                 verifiers = elem['verifiers']
 
-                prompts = []
-                for _ in range(args.num_completions):
-                    # sample a verifier as context for the model
-
-                    verifier = random.choice(verifiers)
-                    prompts.append(tokenizer.apply_chat_template(
-                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction, verifier)}],
+                prompt = tokenizer.apply_chat_template(
+                        [{'role': 'user', 'content': construction_generation_prompt(query, instruction)}],
                         add_generation_prompt=True,
                         tokenize=False
-                    ))
-                all_prompts.extend(prompts)
+                    )
+                all_prompts.append(prompt)
 
             sampling_params = SamplingParams(
                 temperature=1.0,
                 top_p=1.0,
                 max_tokens=args.max_tokens,
+                n=args.num_completions,
                 stop=[tokenizer.eos_token, '<|eom_id|>'],
             )
             outputs = model.generate(all_prompts, sampling_params)
@@ -88,7 +77,8 @@ if __name__ == '__main__':
             completions = []
             for output in outputs:
                 prompt = output.prompt
-                generated_text = output.outputs[0].text
+                for o in output.outputs:
+                    generated_text = o.text
                 completions.append(generated_text)
 
             completions_per_query = args.num_completions
