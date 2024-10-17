@@ -5,6 +5,7 @@ from concurrent.futures import ProcessPoolExecutor, ALL_COMPLETED, wait
 import multiprocessing
 import os
 import signal
+import glob
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Script to filter (instruction, verifiers, test_cases) tuples for self-consistency')
@@ -64,8 +65,23 @@ if __name__ == '__main__':
         print('Aborting.')
         exit()
 
-    with open(args.input) as f:
-        instances = [json.loads(line) for line in f.read().splitlines()]
+    id_to_instance = {}
+    for path in glob.glob(args.input):
+        with open(path) as f:
+            raw_instances = [json.loads(line) for line in f.read().splitlines()]
+            for instance in raw_instances:
+                instance = {
+                    k: v for k, v in instance.items()
+                    if k in ['instance_id', 'query', 'instruction', 'test_cases', 'verifiers', 'completions']
+                }
+                instance_id = instance['instance_id']
+                if instance_id not in id_to_instance:
+                    id_to_instance[instance_id] = instance
+                else:
+                    base_instance = id_to_instance[instance_id]
+                    base_instance['completions'].extend(instance['completions'])
+
+    instances = list(id_to_instance.values())
 
     with ProcessPoolExecutor(16) as executor:
         futures = []
