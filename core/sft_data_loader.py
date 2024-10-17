@@ -2,12 +2,11 @@ from transformers import PreTrainedTokenizerFast
 from torch.utils.data.dataloader import DataLoader
 from core.sft_data_collator import SFTDataCollator
 
-def construct_dpo_dataloader(
+def construct_sft_dataloader(
         tokenizer: PreTrainedTokenizerFast,
         rows: list[dict[str, object]],
         context_length: int,
         batch_size: int,
-        no_loop: bool,
         chosen_threshold: float = 1.0,
     ) -> DataLoader:
     rows_tokenized = []
