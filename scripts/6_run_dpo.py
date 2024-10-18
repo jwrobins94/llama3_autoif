@@ -12,7 +12,7 @@ from lightning.pytorch.utilities.rank_zero import rank_zero_only
 from lightning.pytorch.loggers import WandbLogger
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Script to generate completions for each instruction')
+    parser = argparse.ArgumentParser(description='Script to run DPO')
     parser.add_argument('--model', type=str, required=True, help='Model name, e.g. "meta-llama/Llama-3.1-8B-Instruct"')
     parser.add_argument('--hf-api-token', type=str, required=True, help='HuggingFace API token')
     
@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(f'--chosen-threshold', type=float, default=0.5, help='Chosen responses will have pass rate >= threshold')
     parser.add_argument(f'--rejected-threshold', type=float, default=0.0, help='Rejected responses will have pass rate < threshold (or == threshold if threshold is 0)')
-    parser.add_argument('--no-loop', action='store_true', help='If true, do not loop the short of the [chosen, rejected] lists during zip.', default=False)
+    parser.add_argument('--max-loop', type=int, default=None, help='Optional max number of times to loop the smaller of (chosen, rejected). Used to control the number of times a completion is reused.')
 
     parser.add_argument(f'--input', type=str, required=True, help='Path to the output of 5_sort_completions.py')
     parser.add_argument(f'--output', type=str, required=True, help='Path to write the final model checkpoint')
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         data,
         args.context_length,
         args.batch_size,
-        args.no_loop,
+        args.max_loop,
         args.chosen_threshold,
         args.rejected_threshold
     )
