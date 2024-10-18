@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(f'--beta2', type=float, default=0.95, help='AdamW beta2')
     parser.add_argument(f'--warm-up-steps', type=int, default=1, help='Number of steps for linear LR warm-up')
     parser.add_argument('--include-chosen-nll-loss', action='store_true', help='If true, include an additional NLL loss term on the chosen response', default=False)
+    parser.add_argument('--nll-loss-weight', type=float, default=1.0, help='Loss multiplier for NLL loss (if enabled)')
 
     parser.add_argument(f'--chosen-threshold', type=float, default=0.5, help='Chosen responses will have pass rate >= threshold')
     parser.add_argument(f'--rejected-threshold', type=float, default=0.0, help='Rejected responses will have pass rate < threshold (or == threshold if threshold is 0)')
@@ -71,7 +72,8 @@ if __name__ == '__main__':
         args.warm_up_steps,
         args.beta1,
         args.beta2,
-        args.include_chosen_nll_loss
+        args.include_chosen_nll_loss,
+        args.nll_loss_weight
     )
 
     logger = WandbLogger()

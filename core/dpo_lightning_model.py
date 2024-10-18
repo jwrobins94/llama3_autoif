@@ -14,7 +14,8 @@ class DPOLightningModel(lightning.LightningModule):
                  warm_up_steps: int,
                  beta1: float,
                  beta2: float,
-                 include_chosen_nll_loss: bool
+                 include_chosen_nll_loss: bool,
+                 nll_loss_weight: float
         ):
         super().__init__()
         self.model = model
@@ -28,6 +29,7 @@ class DPOLightningModel(lightning.LightningModule):
         self.beta1 = beta1
         self.beta2 = beta2
         self.include_chosen_nll_loss = include_chosen_nll_loss
+        self.nll_loss_weight = nll_loss_weight
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.model.parameters(),
@@ -113,7 +115,7 @@ class DPOLightningModel(lightning.LightningModule):
             self.log_learning_rate()
 
         if self.include_chosen_nll_loss:
-            chosen_nll_loss = -torch.sum(pi_lps_chosen) / torch.sum(completion_lengths_chosen)
+            chosen_nll_loss = self.nll_loss_weight * -torch.sum(pi_lps_chosen) / torch.sum(completion_lengths_chosen)
             with torch.no_grad():
                 self.log('chosen_nll_loss', chosen_nll_loss, on_step=True, sync_dist=True, logger=True, prog_bar=True)
             
